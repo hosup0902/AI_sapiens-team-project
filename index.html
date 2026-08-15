@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>신선해 — 냉장고 유통기한 관리</title>
+<!-- React & Babel -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<!-- 브라우저용 무료 OCR 엔진 (Tesseract.js) -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+  html, body { margin:0; padding:0; }
+  #root { min-height:100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+/* ------------------------------------------------------------------ */
+/* 아이콘 SVG */
+/* ------------------------------------------------------------------ */
+function Icon({ size = 16, children, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      {children}
+    </svg>
+  );
+}
+const Camera = (p) => <Icon {...p}><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></Icon>;
+const ImagePlus = (p) => <Icon {...p}><rect x="3" y="4" width="14" height="15" rx="2"/><circle cx="8" cy="9.5" r="1.4"/><path d="M3 16l4-4 3 3 2.5-2.5L17 16"/><path d="M19.5 8v6M16.5 11h6"/></Icon>;
+const Plus = (p) => <Icon {...p}><path d="M12 5v14M5 12h14"/></Icon>;
+const Trash2 = (p) => <Icon {...p}><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></Icon>;
+const CheckCircle2 = (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9.3"/></Icon>;
+const XIcon = (p) => <Icon {...p}><path d="M6 6l12 12M18 6L6 18"/></Icon>;
+const ArrowLeft = (p) => <Icon {...p}><path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/></Icon>;
+const Sparkles = (p) => <Icon {...p}><path d="M12 3l1.6 4.6L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.4z"/><path d="M19 15l.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6z"/></Icon>;
+const AlertTriangle = (p) => <Icon {...p}><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><circle cx="12" cy="17.2" r="0.6" fill="currentColor" stroke="none"/></Icon>;
+const Loader2 = (p) => <Icon {...p}><path d="M21 12a9 9 0 1 1-9-9"/></Icon>;
+const RotateCcw = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></Icon>;
+const Pencil = (p) => <Icon {...p}><path d="M4 20l4-1 10-10-3-3L5 16l-1 4z"/><path d="M14 6l3 3"/></Icon>;
+
+/* ------------------------------------------------------------------ */
+/* 데이터베이스 */
+/* ------------------------------------------------------------------ */
+const SHELF_LIFE_DB = {
+  우유: 7, 두유: 10, 요거트: 14, 치즈: 30, 계란: 21, 버터: 60,
+  두부: 5, 순두부: 5, 콩나물: 3, 숙주: 3,
+  상추: 5, 깻잎: 7, 시금치: 5, 대파: 10, 쪽파: 7, 양파: 30, 마늘: 30, 생강: 14,
+  감자: 30, 고구마: 21, 당근: 21, 오이: 5, 토마토: 7, 애호박: 5, 가지: 7,
+  브로콜리: 7, 버섯: 5, 파프리카: 10, 무: 30, 배추: 14, 양배추: 21,
+  사과: 14, 배: 14, 바나나: 5, 딸기: 3, 포도: 7, 귤: 14, 오렌지: 14, 복숭아: 5,
+  삼겹살: 3, 소고기: 3, 돼지고기: 3, 닭고기: 2, 다짐육: 2,
+  생선: 2, 고등어: 2, 삼치: 2, 새우: 2, 오징어: 2, 명태: 2, 조기: 2,
+  어묵: 7, 만두: 14, 소시지: 10, 햄: 14,
+  김치: 90, 단무지: 60, 장아찌: 60,
+  식빵: 5, 라면: 180, 참치캔: 365, 통조림: 365,
+};
+
+const EMOJI_MAP = {
+  우유: "🥛", 두유: "🥛", 요거트: "🍮", 치즈: "🧀", 계란: "🥚", 버터: "🧈",
+  두부: "⬜", 순두부: "⬜", 콩나물: "🌱", 숙주: "🌱",
+  상추: "🥬", 깻잎: "🌿", 시금치: "🥬", 대파: "🧅", 쪽파: "🧅", 양파: "🧅", 마늘: "🧄", 생강: "🫚",
+  감자: "🥔", 고구마: "🍠", 당근: "🥕", 오이: "🥒", 토마토: "🍅", 애호박: "🥒", 가지: "🍆",
+  브로콜리: "🥦", 버섯: "🍄", 파프리카: "🫑", 무: "🌱", 배추: "🥬", 양배추: "🥬",
+  사과: "🍎", 배: "🍐", 바나나: "🍌", 딸기: "🍓", 포도: "🍇", 귤: "🍊", 오렌지: "🍊", 복숭아: "🍑",
+  삼겹살: "🥓", 소고기: "🥩", 돼지고기: "🥩", 닭고기: "🍗", 다짐육: "🥩",
+  생선: "🐟", 고등어: "🐟", 삼치: "🐟", 새우: "🦐", 오징어: "🦑", 명태: "🐟", 조기: "🐟",
+  어묵: "🍢", 만두: "🥟", 소시지: "🌭", 햄: "🍖",
+  김치: "🌶️", 단무지: "🥒", 장아찌: "🥒",
+  식빵: "🍞", 라면: "🍜", 참치캔: "🥫", 통조림: "🥫",
+};
+
+const SORTED_KEYS = Object.keys(SHELF_LIFE_DB).sort((a, b) => b.length - a.length);
+
+function matchShelfLife(rawName) {
+  const name = (rawName || "").replace(/\s/g, "");
+  for (const key of SORTED_KEYS) {
+    if (name.includes(key)) return { days: SHELF_LIFE_DB[key], matched: true, key };
+  }
+  return { days: 7, matched: false, key: null };
+}
+function matchEmoji(rawName) {
+  const name = (rawName || "").replace(/\s/g, "");
+  for (const key of SORTED_KEYS) {
+    if (name.includes(key) && EMOJI_MAP[key]) return EMOJI_MAP[key];
+  }
+  return "🥫";
+}
+
+/* 유틸 */
+function toISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function todayStr() { return toISODate(new Date()); }
+function addDays(dateStr, days) {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  return toISODate(d);
+}
+function daysBetween(dateStr) {
+  const target = new Date(dateStr + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((target - today) / 86400000);
+}
+function formatShort(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+function getStatus(daysLeft) {
+  if (daysLeft <= 0) return "expired";
+  if (daysLeft <= 1) return "urgent";
+  if (daysLeft <= 4) return "warning";
+  return "fresh";
+}
+function statusLabel(status, daysLeft) {
+  if (status === "expired") return daysLeft === 0 ? "오늘까지" : `기한 ${Math.abs(daysLeft)}일 지남`;
+  return `D-${daysLeft}`;
+}
+function uid() {
+  return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "id-" + Math.random().toString(36).slice(2) + Date.now();
+}
+
+function resizeImageToBase64(file, maxDim = 1280, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height >= width && height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve({ previewUrl: dataUrl });
+      };
+      img.onerror = () => reject(new Error("이미지를 불러오지 못했어요."));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error("파일을 읽지 못했어요."));
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* 컴포넌트들 */
+/* ------------------------------------------------------------------ */
+function FreshnessRing({ percent, status, emoji, size = 56 }) {
+  const strokeWidth = 4.5;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(1, percent));
+  const offset = circumference * (1 - clamped);
+  const color = status === "fresh" ? "var(--fresh)" : status === "warning" ? "var(--warn)" : "var(--urgent)";
+  return (
+    <div className="ring-wrap" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth={strokeWidth} />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
+          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`} className="ring-arc"
+        />
+      </svg>
+      <span className="ring-emoji" style={{ fontSize: size * 0.42 }}>{emoji}</span>
+    </div>
+  );
+}
+
+function ItemCard({ item, onConsume, onDelete, onEditDate }) {
+  const daysLeft = daysBetween(item.expiryDate);
+  const status = getStatus(daysLeft);
+  const percent = item.totalDays > 0 ? daysLeft / item.totalDays : 0;
+  const [editing, setEditing] = useState(false);
+
+  return (
+    <div className={`item-card status-${status}`}>
+      <FreshnessRing percent={percent} status={status} emoji={item.emoji} />
+      <div className="item-body">
+        <div className="item-top">
+          <span className="item-name">{item.name}</span>
+          <span className={`item-badge badge-${status}`}>{statusLabel(status, daysLeft)}</span>
+        </div>
+        <div className="item-meta">
+          {editing ? (
+            <input
+              type="date" className="date-input-inline" defaultValue={item.expiryDate} autoFocus
+              onBlur={(e) => { onEditDate(item.id, e.target.value); setEditing(false); }}
+              onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
+            />
+          ) : (
+            <button className="meta-edit-btn" onClick={() => setEditing(true)}>
+              <span>{formatShort(item.expiryDate)}까지</span>
+              <Pencil size={12} />
+            </button>
+          )}
+          {!item.matched && <span className="unmatched-tag">추정치 확인 필요</span>}
+        </div>
+      </div>
+      <div className="item-actions">
+        <button className="icon-btn consume-btn" title="다 먹었어요" onClick={() => onConsume(item.id)}>
+          <CheckCircle2 size={18} />
+        </button>
+        <button className="icon-btn delete-btn" title="삭제" onClick={() => onDelete(item.id)}>
+          <Trash2 size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* App 메인 */
+/* ------------------------------------------------------------------ */
+const ITEMS_KEY = "fresh-fridge-items-v1";
+
+function App() {
+  const [items, setItems] = useState(() => {
+    try {
+      const raw = localStorage.getItem(ITEMS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+
+  const [view, setView] = useState("home");
+  const [scanStatus, setScanStatus] = useState("idle"); 
+  const [scanError, setScanError] = useState("");
+  const [scanProgressMsg, setScanProgressMsg] = useState(""); // OCR 진행상태 표시용
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [pendingItems, setPendingItems] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const [manualName, setManualName] = useState("");
+  const [manualDays, setManualDays] = useState("");
+
+  useEffect(() => {
+    try { localStorage.setItem(ITEMS_KEY, JSON.stringify(items)); } catch {}
+  }, [items]);
+
+  function resetScan() {
+    setScanStatus("idle");
+    setScanError("");
+    setScanProgressMsg("");
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleFileChosen(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const resized = await resizeImageToBase64(file);
+      setSelectedFile(resized);
+      setScanStatus("idle");
+      setScanError("");
+    } catch (err) {
+      setScanError(err.message || "이미지를 처리하지 못했어요.");
+      setScanStatus("error");
+    }
+  }
+
+  // 진짜 OCR 분석 로직 (Tesseract.js)
+  async function handleAnalyze() {
+    if (!selectedFile) return;
+    setScanStatus("loading");
+    setScanError("");
+    setScanProgressMsg("OCR 엔진 초기화 중...");
+    
+    try {
+      // 1. 이미지에서 텍스트 추출
+      const { data: { text } } = await Tesseract.recognize(
+        selectedFile.previewUrl,
+        'kor',
+        {
+          logger: (m) => {
+            if (m.status === "recognizing text") {
+              setScanProgressMsg(`영수증 읽는 중... ${Math.round(m.progress * 100)}%`);
+            } else {
+              setScanProgressMsg("언어 데이터를 준비하고 있어요 (최초 1회)");
+            }
+          }
+        }
+      );
+
+      console.log("인식된 텍스트:", text); // 개발자 도구에서 확인 가능
+
+      // 2. 추출된 텍스트를 DB 키워드와 매칭
+      const foundItems = [];
+      const dbKeys = Object.keys(SHELF_LIFE_DB);
+      
+      for (const key of dbKeys) {
+        if (text.includes(key)) {
+          foundItems.push({ name: key });
+        }
+      }
+
+      if (foundItems.length === 0) {
+        setScanError("영수증에서 식재료를 찾지 못했어요. 텍스트가 잘 안 보일 수 있습니다.");
+        setScanStatus("error");
+        return;
+      }
+
+      // 3. 매칭된 식재료 객체 생성
+      const today = todayStr();
+      const built = foundItems.map((it) => {
+        const { days, matched } = matchShelfLife(it.name);
+        return {
+          id: uid(), name: it.name, emoji: matchEmoji(it.name),
+          addedDate: today, expiryDate: addDays(today, days), totalDays: days, matched,
+        };
+      });
+      
+      setPendingItems(built);
+      setView("confirm");
+      resetScan();
+    } catch (err) {
+      console.error(err);
+      setScanError("문자를 분석하는 중 문제가 발생했어요.");
+      setScanStatus("error");
+    }
+  }
+
+  function updatePendingDate(id, newDate) {
+    setPendingItems((prev) =>
+      prev.map((it) => (it.id === id ? { ...it, expiryDate: newDate, totalDays: Math.max(1, daysBetween(newDate)) } : it))
+    );
+  }
+  function removePendingItem(id) {
+    setPendingItems((prev) => prev.filter((it) => it.id !== id));
+  }
+  function confirmAddAll() {
+    setItems((prev) => [...prev, ...pendingItems]);
+    setPendingItems([]);
+    setView("home");
+  }
+  function consumeItem(id) { setItems((prev) => prev.filter((it) => it.id !== id)); }
+  function deleteItem(id) { setItems((prev) => prev.filter((it) => it.id !== id)); }
+  function editItemDate(id, newDate) {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, expiryDate: newDate } : it)));
+  }
+
+  function submitManual(e) {
+    e.preventDefault();
+    const name = manualName.trim();
+    if (!name) return;
+    const guess = matchShelfLife(name);
+    const days = manualDays ? Math.max(1, parseInt(manualDays, 10) || guess.days) : guess.days;
+    const today = todayStr();
+    const newItem = {
+      id: uid(), name, emoji: matchEmoji(name), addedDate: today,
+      expiryDate: addDays(today, days), totalDays: days, matched: guess.matched,
+    };
+    setItems((prev) => [...prev, newItem]);
+    setManualName("");
+    setManualDays("");
+    setView("home");
+  }
+
+  const sortedItems = [...items].sort((a, b) => daysBetween(a.expiryDate) - daysBetween(b.expiryDate));
+  const urgentCount = items.filter((it) => daysBetween(it.expiryDate) <= 1).length;
+
+  return (
+    <div className="page">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+        :root{
+          --bg:#0E1E19; --bg-2:#0A1712; --surface:#17291F; --surface-2:#1E3327;
+          --line: rgba(255,255,255,0.08); --text:#ECF3EC; --text-muted:#93A99B;
+          --fresh:#6FCF7A; --warn:#F0AD3E; --urgent:#E86A4D; --brand:#7FDB8F;
+        }
+        *{ box-sizing:border-box; }
+        body{ margin:0; }
+        .page{
+          min-height:100vh; background: radial-gradient(120% 140% at 15% 0%, #14281F 0%, var(--bg-2) 55%, #070F0C 100%);
+          font-family:'Inter', system-ui, sans-serif; color:var(--text);
+          display:flex; justify-content:center; padding:28px 16px 60px;
+        }
+        .app-shell{
+          width:100%; max-width:430px; background:var(--bg); border:1px solid var(--line);
+          border-radius:28px; box-shadow: 0 30px 80px -30px rgba(0,0,0,0.7); overflow:hidden;
+          animation: rise .5s ease both;
+        }
+        @keyframes rise{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+        .header{ padding:24px 22px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+        .brand{ display:flex; align-items:center; gap:9px; }
+        .brand-mark{ width:34px; height:34px; border-radius:10px; background: linear-gradient(155deg, var(--brand), #3E9A57); display:flex; align-items:center; justify-content:center; color:#0A1712; }
+        .brand-text h1{ font-family:'Space Grotesk', sans-serif; font-size:18px; font-weight:700; margin:0; letter-spacing:-0.01em; }
+        .brand-text p{ margin:1px 0 0; font-size:11.5px; color:var(--text-muted); }
+        .back-btn{ background:none; border:none; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:6px; font-size:13px; padding:6px; border-radius:8px; }
+        .back-btn:hover{ color:var(--text); background:var(--surface); }
+        .stats-row{ display:flex; gap:10px; padding:16px 22px 4px; }
+        .stat-chip{ flex:1; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+        .stat-chip .num{ font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:600; }
+        .stat-chip .lbl{ font-size:11px; color:var(--text-muted); margin-top:2px; }
+        .stat-chip.warn .num{ color:var(--urgent); }
+        .list{ padding:14px 16px 8px; display:flex; flex-direction:column; gap:10px; }
+        .item-card{ display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:10px 12px; animation: fadein .35s ease both; }
+        @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+        .ring-wrap{ position:relative; flex-shrink:0; }
+        .ring-emoji{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+        .ring-arc{ transition: stroke-dashoffset .6s ease; }
+        .item-body{ flex:1; min-width:0; }
+        .item-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .item-name{ font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .item-badge{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
+        .badge-fresh{ background:rgba(111,207,122,0.15); color:var(--fresh); }
+        .badge-warning{ background:rgba(240,173,62,0.16); color:var(--warn); }
+        .badge-urgent{ background:rgba(232,106,77,0.18); color:var(--urgent); }
+        .badge-expired{ background:rgba(232,106,77,0.22); color:var(--urgent); }
+        .item-meta{ display:flex; align-items:center; gap:8px; margin-top:4px; }
+        .meta-edit-btn{ background:none; border:none; color:var(--text-muted); font-size:11.5px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0; }
+        .meta-edit-btn:hover{ color:var(--text); }
+        .unmatched-tag{ font-size:10.5px; color:var(--warn); background:rgba(240,173,62,0.12); padding:1px 7px; border-radius:999px; }
+        .date-input-inline{ background:var(--surface-2); border:1px solid var(--line); color:var(--text); font-size:11.5px; border-radius:7px; padding:2px 6px; }
+        .item-actions{ display:flex; flex-direction:column; gap:6px; }
+        .icon-btn{ border:none; background:var(--surface-2); color:var(--text-muted); width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform .15s ease, color .15s ease, background .15s ease; }
+        .icon-btn:hover{ transform:translateY(-1px); }
+        .consume-btn:hover{ color:var(--fresh); background:rgba(111,207,122,0.14); }
+        .delete-btn:hover{ color:var(--urgent); background:rgba(232,106,77,0.14); }
+        .empty-state{ margin:22px 20px 6px; padding:32px 20px; text-align:center; border:1.5px dashed var(--line); border-radius:20px; }
+        .empty-state .emoji{ font-size:34px; }
+        .empty-state h3{ font-family:'Space Grotesk', sans-serif; font-size:16px; margin:10px 0 4px; }
+        .empty-state p{ font-size:13px; color:var(--text-muted); margin:0 0 4px; line-height:1.5; }
+        .fab-row{ display:flex; gap:10px; padding:16px 16px 20px; }
+        .fab{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:13px 14px; border-radius:14px; font-weight:600; font-size:13.5px; cursor:pointer; border:none; transition: filter .15s ease, transform .15s ease; }
+        .fab:hover{ transform:translateY(-1px); }
+        .fab-primary{ background: linear-gradient(155deg, var(--brand), #3E9A57); color:#0A1712; }
+        .fab-secondary{ background:var(--surface); color:var(--text); border:1px solid var(--line); }
+        .content{ padding:18px 20px 26px; }
+        .section-title{ font-family:'Space Grotesk', sans-serif; font-size:17px; margin:0 0 4px; }
+        .section-sub{ font-size:12.5px; color:var(--text-muted); line-height:1.55; margin:0 0 18px; }
+        .upload-box{ border:1.5px dashed var(--line); border-radius:18px; padding:34px 18px; text-align:center; cursor:pointer; transition:border-color .15s ease, background .15s ease; display:block; }
+        .upload-box:hover{ border-color: var(--brand); background:var(--surface); }
+        .upload-box .icon-circle{ width:52px; height:52px; border-radius:50%; background:var(--surface); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--brand); }
+        .upload-box p.title{ font-weight:600; font-size:14px; margin:0 0 4px; }
+        .upload-box p.hint{ font-size:12px; color:var(--text-muted); margin:0; }
+        .preview-wrap{ position:relative; border-radius:16px; overflow:hidden; border:1px solid var(--line); }
+        .preview-wrap img{ width:100%; display:block; max-height:280px; object-fit:cover; }
+        .preview-remove{ position:absolute; top:8px; right:8px; background:rgba(10,20,15,0.7); border:none; color:#fff; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter: blur(4px); }
+        .primary-btn{ width:100%; margin-top:16px; padding:14px; border:none; border-radius:14px; background: linear-gradient(155deg, var(--brand), #3E9A57); color:#0A1712; font-weight:700; font-size:14.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .primary-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+        .ghost-btn{ width:100%; margin-top:10px; padding:12px; border-radius:14px; border:1px solid var(--line); background:transparent; color:var(--text-muted); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; }
+        .status-line{ display:flex; flex-direction:column; gap:6px; font-size:13px; margin-top:14px; padding:14px; border-radius:12px; }
+        .status-line.loading{ background:var(--surface); color:var(--text-muted); }
+        .status-line.err{ background:rgba(232,106,77,0.12); color:var(--urgent); }
+        .status-line .spin-row { display:flex; align-items:center; gap:8px; }
+        .spin{ animation: spin 0.9s linear infinite; }
+        @keyframes spin{ to{ transform:rotate(360deg); } }
+        .confirm-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+        .confirm-item{ display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
+        .confirm-emoji{ font-size:22px; width:30px; text-align:center; }
+        .confirm-info{ flex:1; min-width:0; }
+        .confirm-name{ font-weight:600; font-size:13.5px; }
+        .confirm-sub{ font-size:11px; color:var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:6px; }
+        .confirm-date{ background:var(--surface-2); border:1px solid var(--line); color:var(--text); font-size:12px; border-radius:8px; padding:5px 7px; font-family:'IBM Plex Mono', monospace; }
+        .confirm-remove{ border:none; background:none; color:var(--text-muted); cursor:pointer; padding:6px; }
+        .confirm-remove:hover{ color:var(--urgent); }
+        .field{ margin-bottom:14px; }
+        .field label{ display:block; font-size:12.5px; color:var(--text-muted); margin-bottom:6px; }
+        .field input, .field select{ width:100%; padding:11px 13px; border-radius:11px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:14px; font-family:inherit; }
+        .field input:focus, .field select:focus, button:focus-visible, .upload-box:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
+        .hint-text{ font-size:11.5px; color:var(--text-muted); margin-top:5px; }
+        @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+      `}</style>
+
+      <div className="app-shell">
+        <div className="header">
+          <div className="brand">
+            <div className="brand-mark"><Sparkles size={17} /></div>
+            <div className="brand-text">
+              <h1>신선해</h1>
+              <p>사진 한 장으로 끝나는 냉장고 관리</p>
+            </div>
+          </div>
+          {view !== "home" && (
+            <button className="back-btn" onClick={() => { setView("home"); resetScan(); }}>
+              <ArrowLeft size={15} /> 홈
+            </button>
+          )}
+        </div>
+
+        {view === "home" && (
+          <>
+            {items.length > 0 && (
+              <div className="stats-row">
+                <div className="stat-chip">
+                  <div className="num">{items.length}</div>
+                  <div className="lbl">보관 중인 재료</div>
+                </div>
+                <div className={`stat-chip ${urgentCount > 0 ? "warn" : ""}`}>
+                  <div className="num">{urgentCount}</div>
+                  <div className="lbl">곧 상하는 재료</div>
+                </div>
+              </div>
+            )}
+
+            {items.length === 0 ? (
+              <div className="empty-state">
+                <div className="emoji">🧊</div>
+                <h3>냉장고가 비어있어요</h3>
+                <p>영수증이나 온라인 장바구니 캡처를 올리면<br />AI 엔진(OCR)이 텍스트를 분석해 재료를 찾아냅니다.</p>
+              </div>
+            ) : (
+              <div className="list">
+                {sortedItems.map((item) => (
+                  <ItemCard key={item.id} item={item} onConsume={consumeItem} onDelete={deleteItem} onEditDate={editItemDate} />
+                ))}
+              </div>
+            )}
+
+            <div className="fab-row">
+              <button className="fab fab-primary" onClick={() => setView("scan")}>
+                <Camera size={16} /> 사진으로 추가
+              </button>
+              <button className="fab fab-secondary" onClick={() => setView("manual")}>
+                <Plus size={16} /> 직접 추가
+              </button>
+            </div>
+          </>
+        )}
+
+        {view === "scan" && (
+          <div className="content">
+            <h2 className="section-title">진짜 영수증 인식하기</h2>
+            <p className="section-sub">
+              스마트폰 브라우저 안에서 OCR 기술로 글자를 직접 읽어냅니다. (서버 전송 없이 안전해요!) 마트 영수증을 올려보세요.
+            </p>
+
+            {!selectedFile ? (
+              <label className="upload-box" htmlFor="receipt-input">
+                <div className="icon-circle"><ImagePlus size={22} /></div>
+                <p className="title">영수증 사진 선택</p>
+                <p className="hint">클릭하여 이미지 업로드</p>
+                <input
+                  ref={fileInputRef} id="receipt-input" type="file" accept="image/*"
+                  style={{ display: "none" }} onChange={handleFileChosen}
+                />
+              </label>
+            ) : (
+              <div className="preview-wrap">
+                <img src={selectedFile.previewUrl} alt="선택한 이미지 미리보기" />
+                <button className="preview-remove" onClick={resetScan}><XIcon size={15} /></button>
+              </div>
+            )}
+
+            {selectedFile && scanStatus !== "loading" && (
+              <button className="primary-btn" onClick={handleAnalyze}>
+                <Sparkles size={16} /> 실제 이미지 분석 시작
+              </button>
+            )}
+
+            {scanStatus === "loading" && (
+              <div className="status-line loading">
+                <div className="spin-row">
+                  <Loader2 size={16} className="spin" /> 
+                  <strong>이미지 분석 진행 중</strong>
+                </div>
+                <div style={{ color: "var(--brand)", marginTop: "4px" }}>{scanProgressMsg}</div>
+                <div style={{ fontSize: "11px", opacity: 0.7, marginTop: "4px" }}>
+                  (처음 실행 시 한국어 언어팩 다운로드에 시간이 걸릴 수 있습니다)
+                </div>
+              </div>
+            )}
+            {scanStatus === "error" && (
+              <>
+                <div className="status-line err" style={{ flexDirection: "row" }}>
+                  <AlertTriangle size={16} /> {scanError}
+                </div>
+                <button className="ghost-btn" onClick={resetScan}><RotateCcw size={14} /> 다른 사진으로 다시 시도</button>
+              </>
+            )}
+          </div>
+        )}
+
+        {view === "confirm" && (
+          <div className="content">
+            <h2 className="section-title">인식된 재료 확인</h2>
+            <p className="section-sub">이미지 텍스트에서 매칭된 식재료들입니다. 날짜를 눌러 수정해보세요.</p>
+
+            {pendingItems.length === 0 ? (
+              <p className="hint-text">추가할 재료가 없어요.</p>
+            ) : (
+              <div className="confirm-list">
+                {pendingItems.map((item) => (
+                  <div className="confirm-item" key={item.id}>
+                    <span className="confirm-emoji">{item.emoji}</span>
+                    <div className="confirm-info">
+                      <div className="confirm-name">{item.name}</div>
+                      <div className="confirm-sub">{item.matched ? `자동 추정 · ${item.totalDays}일` : "추정치 확인 필요"}</div>
+                    </div>
+                    <input type="date" className="confirm-date" value={item.expiryDate}
+                      onChange={(e) => updatePendingDate(item.id, e.target.value)} />
+                    <button className="confirm-remove" onClick={() => removePendingItem(item.id)}><XIcon size={15} /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button className="primary-btn" disabled={pendingItems.length === 0} onClick={confirmAddAll}>
+              <CheckCircle2 size={16} /> 냉장고에 담기 ({pendingItems.length}개)
+            </button>
+          </div>
+        )}
+
+        {view === "manual" && (
+          <div className="content">
+            <h2 className="section-title">직접 추가</h2>
+            <p className="section-sub">재료 이름을 적으면 평균 소비기한을 자동으로 추천해드려요.</p>
+            <form onSubmit={submitManual}>
+              <div className="field">
+                <label htmlFor="manual-name">재료 이름</label>
+                <input id="manual-name" list="food-suggestions" placeholder="예: 양파"
+                  value={manualName} onChange={(e) => setManualName(e.target.value)} required />
+                <datalist id="food-suggestions">
+                  {Object.keys(SHELF_LIFE_DB).map((k) => <option key={k} value={k} />)}
+                </datalist>
+                {manualName.trim() && (
+                  <p className="hint-text">
+                    {matchShelfLife(manualName).matched
+                      ? `자동 추정 소비기한: ${matchShelfLife(manualName).days}일`
+                      : "일치하는 항목이 없어요. 기본값 7일이 적용돼요."}
+                  </p>
+                )}
+              </div>
+              <div className="field">
+                <label htmlFor="manual-days">예상 소비기한 (일) — 선택 입력</label>
+                <input id="manual-days" type="number" min="1"
+                  placeholder={String(matchShelfLife(manualName).days || 7)}
+                  value={manualDays} onChange={(e) => setManualDays(e.target.value)} />
+              </div>
+              <button className="primary-btn" type="submit"><Plus size={16} /> 냉장고에 추가</button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
