@@ -138,11 +138,16 @@ PPO 최종의 충돌 3건 중 2건은 일반 차량이 교차로에서 AV를 들
 | `ydp_ppo_bulk_*.npz` | 최종 PPO | 420 | 710,764 | 학습용 배열 (NPZ) |
 | `expert_train.{jsonl.gz,npz}` | 전문가 (+가감속 잡음 σ=0.1) | 140 | 237,118 | PPO 초기화용 |
 
-컬럼 설명은 `docs/dataset_card.md`. **10^7 transition 목표**: 이 저장소 코드로
+위 데이터 파일은 모두 이 저장소 `data/`에 들어 있어요(총 약 210 MB). 학습 실행 폴더·평가 결과·세션 실험 로그는 `results/`
+(`results/session_logs/README.md` 참고). 컬럼 설명은 `docs/dataset_card.md`. **10^7 transition 목표**: 이 저장소 코드로
 `python collect_pomdp_data.py --model results/final/model.pt --episodes 6000 --workers <코어 수> --no-jsonl --name ydp_ppo_bulk_02`
 (4코어 기준 약 300 step/s → 약 9시간, 16코어 약 2.5시간). 수집 후 `tools/upload_hf.py`로 업로드.
 
-## 9. 남은 과제 / 한계
+## 9. 발표 자료
+
+- 중간발표(3분): `docs/midterm/중간발표_AI_sapiens.pptx` (PDF 동봉), 대본 `docs/midterm/중간발표_대본.md` (슬라이드 노트에도 포함)
+
+## 10. 남은 과제 / 한계
 
 - 회전 제한(OSM restriction) 반영: 로컬에서 `python tools/fetch_osm.py --force` → `python -m env.road_builder`
 - OSM에 차로 수가 없는 간선(국회대로·경인로·노들로 등) 로드뷰 확인 후 `osm_fixes`의 `"name:<도로명>"` 보정
