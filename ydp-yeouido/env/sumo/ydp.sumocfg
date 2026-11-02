@@ -1,0 +1,28 @@
+<configuration>
+    <input>
+        <net-file value="ydp.net.xml"/>
+        <route-files value="ydp.rou.xml"/>
+        <additional-files value="ydp.vtypes.xml,ydp.tls.xml,ydp.poly.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <step-length value="0.1"/>
+    </time>
+    <processing>
+        <time-to-teleport value="180"/>
+        <collision.check-junctions value="true"/>
+        <collision.action value="warn"/>
+        <ignore-route-errors value="true"/>
+        <default.speeddev value="0.1"/>
+        <lateral-resolution value="0"/>
+    </processing>
+    <random_number>
+        <seed value="42"/>
+    </random_number>
+    <report>
+        <no-step-log value="true"/>
+    </report>
+    <gui_only>
+        <gui-settings-file value="ydp.gui.xml"/>
+    </gui_only>
+</configuration>

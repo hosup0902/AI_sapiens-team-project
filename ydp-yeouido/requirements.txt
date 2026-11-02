@@ -1,0 +1,9 @@
+# SUMO 1.27 이상 (eclipse-sumo) 필요 — SUMO_HOME 설정 또는 pip install eclipse-sumo
+eclipse-sumo>=1.27
+traci
+sumolib
+libsumo
+numpy
+matplotlib
+shapely>=2.0
+pyproj>=3.6

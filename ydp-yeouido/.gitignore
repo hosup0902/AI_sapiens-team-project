@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+# 빌드 중간 산출물 (python -m env.road_builder 로 재생성)
+env/sumo/*.log
+env/sumo/plain/
+env/sumo/*.roads.osm
+env/sumo/*.stage1.net.xml
+env/sumo/*.trips.xml
+env/sumo/*.rou.alt.xml
+env/sumo/*.tls_webster.xml
+env/sumo/*.tls_offsets.xml
+env/sumo/osm_ko.typ.xml
+# 진단용 이미지 / 결과
+assets/figures/jam_*.png
+results/
+data/*.npz
+data/*.jsonl*
