@@ -48,7 +48,10 @@ def run_worker(args, episodes, wid):
     pol = load_policy(args, env)
     rows = []
     try:
+        parent = os.getppid()
         for ep in episodes:
+            if os.getppid() != parent:          # 부모 프로세스가 종료되면 함께 종료
+                break
             env._route_cursor = ep
             obs, info = env.reset(seed=args.seed * 100003 + ep)
             done, n, ret = False, 0, 0.0

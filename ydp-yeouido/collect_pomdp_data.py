@@ -139,7 +139,10 @@ def collect(args, episodes, worker_id, jsonl_path, npz_path, tag=""):
     stats = {"episodes": 0, "collisions": 0, "arrivals": 0, "stuck": 0}
     try:
         with gzip.open(jsonl_path, "wt", encoding="utf-8", compresslevel=6) as jf:
+            parent = os.getppid()
             for ep in episodes:
+                if args.workers > 1 and os.getppid() != parent:   # 부모가 죽으면 고아 워커로 남지 않게 종료
+                    break
                 env._route_cursor = ep          # 에피소드 번호로 경로를 고르게 순환
                 obs, info = env.reset(seed=args.seed * 100003 + ep)
                 state_t = env.get_privileged_state(args.state_radius)

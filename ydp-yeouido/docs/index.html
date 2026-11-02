@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>영등포–여의도 자율주행</title>
+<meta name="description" content="서울 영등포~여의도 실제 도로를 SUMO로 구현하고, 일반 차량 수천 대 사이에서 자율주행 차량이 목적지까지 주행하도록 학습한 프로젝트">
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#5d5d63;--card:#ffffff;--line:#e3e1dc;--accent:#c8102e;--accent2:#1f5fa8;--ok:#1d7a46}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141416;--fg:#ececef;--muted:#a3a3ab;--card:#1d1d21;--line:#2e2e34;--accent:#ff5a6e;--accent2:#7fb2ff;--ok:#5fd393}}
+:root[data-theme="dark"]{--bg:#141416;--fg:#ececef;--muted:#a3a3ab;--card:#1d1d21;--line:#2e2e34;--accent:#ff5a6e;--accent2:#7fb2ff;--ok:#5fd393}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;line-height:1.65;font-size:16px}
+main{max-width:980px;margin:0 auto;padding:40px 16px 80px}
+header h1{font-size:clamp(26px,4.4vw,40px);line-height:1.25;margin:0 0 10px;letter-spacing:-.01em}
+header p.lead{color:var(--muted);font-size:18px;margin:0 0 18px}
+.team{color:var(--muted);font-size:15px}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 8px}
+.links a{display:inline-block;padding:9px 16px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--fg);text-decoration:none;font-weight:600;font-size:15px}
+.links a:hover{border-color:var(--accent)}
+h2{font-size:24px;margin:52px 0 14px;padding-top:6px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:26px 0 8px}
+figure{margin:18px 0}
+figure img,video{width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+figcaption{color:var(--muted);font-size:14px;margin-top:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .v{font-size:28px;font-weight:700;letter-spacing:-.01em}
+.kpi .l{color:var(--muted);font-size:13.5px}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--card);border-radius:10px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:700;background:color-mix(in srgb,var(--card) 85%,var(--fg) 5%)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.note{color:var(--muted);font-size:14px}
+.good{color:var(--ok);font-weight:700}
+footer{margin-top:60px;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>영등포 로터리부터 여의도까지,<br>실제 도시망을 달리는 자율주행 차량</h1>
+  <p class="lead">서울 영등포·당산·여의도 일대(4.8 km × 3.4 km)를 OpenStreetMap에서 SUMO로 옮기고, 시간당 7,200대의 일반 차량 사이에서 자율주행 차량(AV)이 7개 실제 경로를 출발지부터 목적지까지 주행하도록 학습했습니다.</p>
+  <div class="team">AI_sapiens · 자율주행 인공지능 및 제어 팀 프로젝트</div>
+  <div class="links">
+    <a href="https://github.com/hosup0902/AI_sapiens-team-project/tree/main/ydp-yeouido">GitHub 코드</a>
+    <a href="#" id="link-slides">발표자료 (PDF)</a>
+    <a href="#" id="link-hf">HuggingFace 데이터</a>
+    <a href="#video">주행 영상</a>
+  </div>
+</header>
+
+<!-- KPI -->
+<section id="results-kpi">
+  <div class="kpis">
+    <div class="kpi"><div class="v" data-k="collision">–</div><div class="l">AV 충돌률 (100 에피소드)</div></div>
+    <div class="kpi"><div class="v" data-k="success">–</div><div class="l">목적지 완주율</div></div>
+    <div class="kpi"><div class="v">7,200</div><div class="l">일반 차량 / 시간 (6종 컨트롤러)</div></div>
+    <div class="kpi"><div class="v">107</div><div class="l">신호교차로 (Webster + 녹색 연동)</div></div>
+  </div>
+</section>
+
+<h2>1. 도로 선정 — 왜 영등포·여의도인가</h2>
+<figure><img src="img/map_full.png" alt="SUMO로 구현한 영등포~여의도 도로망 전체"><figcaption>SUMO 도로망 + 건물 2,187동 + 한강·공원. 빨간 점은 신호교차로.</figcaption></figure>
+<div class="table-wrap"><table>
+<tr><th>구조</th><th>실제 위치</th><th>AV 의사결정</th></tr>
+<tr><td>로터리 → 평면 신호교차로</td><td>영등포 로터리 (OSM 11개 점 병합)</td><td>다방향 진입 차량과 상충, 출구 차로 선택</td></tr>
+<tr><td>교량 진입·진출</td><td>서울교 · 여의교 · 마포대교 · 서강대교</td><td>교량 끝 신호 직전 합류/분기, 차로 확보</td></tr>
+<tr><td>도시고속도로 램프</td><td>올림픽대로 · 노들로</td><td>80 → 50 km/h 감속, 램프 합류</td></tr>
+<tr><td>입체 교차</td><td>여의대방로 고가, 여의교·대방·여의도 지하차도</td><td>같은 도로명이라도 층이 다른 경로</td></tr>
+<tr><td>다차로 간선 + 이면 격자</td><td>여의대로 · 경인로 · 국회대로</td><td>회전 전 차로 변경, 느린 차 추월, 신호 대기열</td></tr>
+</table></div>
+
+<h2>2. 도로 환경 구축</h2>
+<div class="grid2">
+<div>
+<h3>OSM → SUMO 파이프라인</h3>
+<ul>
+<li>영역 경계에서 도로를 정확히 잘라 경계 노드 생성</li>
+<li>국내 제한속도(안전속도 5030, 올림픽대로 80), 등급별 기본 차로 수, 차로폭 3.2 m</li>
+<li>OSM 오류 보정(일방 way에 왕복 차로 수), 쪼개진 교차로 병합 5곳 — 고가 위 노드는 제외</li>
+<li>신호 107곳: 간선×간선 방향별 동시신호, 보호 좌회전, 적색 우회전, Webster 주기 + 녹색 연동</li>
+<li>고속 3차로를 가로지르는 비보호 좌회전 금지 (도로교통법: 비보호는 표지 설치 교차로만)</li>
+</ul>
+</div>
+<div>
+<h3>실제 도로 일치도 (OSM 대비)</h3>
+<ul>
+<li>도로 포함 97.8 % (빠진 부분은 영역 경계 조각)</li>
+<li>선형 오차 중앙값 0.01 m · 99 % 4.8 m</li>
+<li>차로 수 (OSM 태그 구간) 99.5 % 일치 · 제한속도 100 % 일치</li>
+<li>층이 다른 도로를 평면 연결한 오류 0건</li>
+</ul>
+<p class="note">tools/fidelity_check.py 로 재현. 차로 수 태그가 없는 간선은 등급별 추정값.</p>
+</div>
+</div>
+<figure><img src="img/av_routes.png" alt="AV 과제 경로 7개"><figcaption>AV 과제: 영역 경계 → 경계 실제 통행 OD 7개 (3.5~4.9 km, 신호 6~33곳)</figcaption></figure>
+
+<h2>3. 일반 차량(HV)과 시뮬레이션 안정성</h2>
+<p>Krauss 32 % · IDM 28 % · EIDM 20 % · ACC 12 % · 버스 5 % · 트럭 3 %. 경계 가중 randomTrips 로 7,200대/h를 투입하고, 60초마다 실시간 통행시간으로 경로를 다시 고르는 동적 재경로(내비게이션 운전자)를 적용했습니다.</p>
+<div class="table-wrap"><table id="stab-table">
+<tr><th>단계 (80분 시뮬레이션)</th><th class="n">수요(대/h)</th><th class="n">텔레포트</th><th class="n">종료 시 잔류</th><th class="n">평균속도</th></tr>
+<tr><td>초기 (OSM 그대로)</td><td class="n">6,546</td><td class="n">158*</td><td class="n">–</td><td class="n">–</td></tr>
+<tr><td>교차로 병합 + Webster 신호</td><td class="n">6,546</td><td class="n">255</td><td class="n">342</td><td class="n">17.8 km/h</td></tr>
+<tr><td>+ 동적 재경로</td><td class="n">6,546</td><td class="n">28</td><td class="n">0</td><td class="n">26.6 km/h</td></tr>
+<tr><td>+ 보호좌회전·고속 비보호 금지·신호 지정 (최종)</td><td class="n">7,200</td><td class="n">28</td><td class="n">2</td><td class="n">25.7 km/h</td></tr>
+</table></div>
+<p class="note">* 초기값은 30분 구간. 텔레포트 = 180초 이상 움직이지 못해 SUMO가 강제 이동시킨 차량.</p>
+
+<h2>4. AV 문제 정의 (POMDP)</h2>
+<div class="grid2">
+<div>
+<h3>관측 44차원</h3>
+<ul>
+<li>수업 31차원: 내 속도, 5개 차선 선·후행 거리/상대속도, 차선별 밀도</li>
+<li>차선별 <b>경로 지속 거리</b> — 회전 전에 어느 차선에 있어야 하는지</li>
+<li>다음 신호 거리·상태·남은 시간, 다음 교차로 거리·우선권</li>
+<li>필요 차선 변경 수·남은 거리, 제한속도(현재/다음), 진행률, TTC 위험도</li>
+<li>교차로 안에 갇힌 교차 차량을 '정지 장애물'로 인식</li>
+</ul>
+</div>
+<div>
+<h3>행동 · 보상</h3>
+<ul>
+<li>행동: [가감속, 차선변경 {-1,0,+1}] (수업과 동일)</li>
+<li>추돌 회피·속도 선택·재량 차선변경은 정책이, 신호·교차로 우선권은 SUMO 법규 계층이 담당</li>
+<li>보상: 속도·진행 + / 근접·TTC·급가감속·불필요 정지 − / 충돌 −10 · 도착 +5 · 교착 −5</li>
+<li>안전 필터: 앞 장애물이 급정거해도 멈출 수 있는 속도로만 제한 (개입률 보고)</li>
+</ul>
+</div>
+</div>
+
+<h2>5. 학습</h2>
+<p>규칙 기반 전문가(IDM + 신호 정지 + 추월)로 데이터를 모아 <b>BC</b>를 학습하고, 같은 데이터로 수업 PPO의 하이브리드 정책(가감속 Normal + 차선 Categorical)을 초기화한 뒤 <b>PPO</b>로 미세조정했습니다.</p>
+<div id="train-detail"></div>
+
+<h2>6. 결과</h2>
+<div class="table-wrap"><table id="eval-table"><tr><th>정책</th><th class="n">충돌률</th><th class="n">완주율</th><th class="n">평균 통행시간</th><th class="n">평균속도</th></tr></table></div>
+<div class="table-wrap"><table id="route-table"></table></div>
+
+<h2 id="video">7. 주행 영상</h2>
+<div id="videos"></div>
+
+<h2>8. 데이터셋</h2>
+<p>수업 <code>collect_pomdp_data.py</code> 기본 항목을 모두 포함하고, 경로 id·교착·안전필터 개입·진행률, ego 절대 위치(경위도)·도로명·제한속도·다음 신호, 반경 150 m 주변 차량(타입 포함)을 추가했습니다.</p>
+<div id="data-detail"></div>
+
+<h2>9. 문제와 해결</h2>
+<div class="table-wrap"><table>
+<tr><th>문제</th><th>원인</th><th>해결</th></tr>
+<tr><td>로터리·교량 끝 교착</td><td>OSM에서 한 교차로가 2~11개 점으로 쪼개져 교차로 안에서 다시 신호 대기</td><td>교차로 병합 5곳 (고가 위 노드는 제외)</td></tr>
+<tr><td>고가 차량이 평면 신호를 받음</td><td>반경 병합이 여의대방로 고가의 램프 합류점까지 포함</td><td>층(layer) 검사로 입체 노드 병합 제외 → 충돌 7→2</td></tr>
+<tr><td>국회대로·로터리 접근 과포화</td><td>고정 최단경로로 모든 차가 같은 간선에 몰림</td><td>60초 동적 재경로 → 텔레포트 255→28, 잔류 342→0</td></tr>
+<tr><td>연쇄 충돌 집계</td><td>collision.action=warn 이 충돌 차량을 교차로에 남김</td><td>remove 로 통일</td></tr>
+<tr><td>노들로 좌회전 충돌</td><td>70 km/h 3차로를 가로지르는 비보호 좌회전</td><td>국내 법규 기준 고속 비보호 좌회전 금지</td></tr>
+<tr><td>AV가 교차로 안 갇힌 차량과 충돌</td><td>SUMO의 교차로 상충 감속이 안전거리 비트에 묶여 있음</td><td>getJunctionFoes로 상충 차량을 경로 장애물로 관측·필터에 반영</td></tr>
+<tr><td>회전 관측 부족</td><td>수업 관측은 직선 고속도로용</td><td>경로 지속 거리·신호·교차로 관측 추가</td></tr>
+</table></div>
+
+<footer>
+도로·건물 © OpenStreetMap contributors (ODbL) · 시뮬레이터 Eclipse SUMO · 학습 코드: 수업 제공 PPO/BC
+</footer>
+</main>
+<script>
+// 결과 값은 results.json (evaluate.py 결과 요약)에서 채운다
+fetch("results.json").then(r => r.ok ? r.json() : null).then(d => {
+  if (!d) return;
+  const pct = x => (x * 100).toFixed(1) + " %";
+  const m = d.main;
+  document.querySelector('[data-k="collision"]').textContent = pct(m.collision_rate);
+  document.querySelector('[data-k="success"]').textContent = pct(m.success_rate);
+  if (d.links) {
+    if (d.links.slides) document.getElementById("link-slides").href = d.links.slides;
+    if (d.links.hf) document.getElementById("link-hf").href = d.links.hf;
+  }
+  const et = document.getElementById("eval-table");
+  for (const p of d.policies) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${p.name}</td><td class="n">${pct(p.collision_rate)}</td><td class="n">${pct(p.success_rate)}</td>` +
+      `<td class="n">${p.mean_travel_time_s ? Math.round(p.mean_travel_time_s) + " s" : "–"}</td><td class="n">${p.mean_speed_kmh.toFixed(1)} km/h</td>`;
+    et.appendChild(tr);
+  }
+  const rt = document.getElementById("route-table");
+  rt.innerHTML = `<tr><th>경로 (${m.name})</th><th class="n">에피소드</th><th class="n">충돌률</th><th class="n">완주율</th><th class="n">평균 통행시간</th></tr>`;
+  for (const [k, s] of Object.entries(d.per_route)) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${k}</td><td class="n">${s.episodes}</td><td class="n">${pct(s.collision_rate)}</td><td class="n">${pct(s.success_rate)}</td><td class="n">${s.mean_travel_time_s ? Math.round(s.mean_travel_time_s) + " s" : "–"}</td>`;
+    rt.appendChild(tr);
+  }
+  document.getElementById("train-detail").innerHTML = d.train_html || "";
+  document.getElementById("data-detail").innerHTML = d.data_html || "";
+  document.getElementById("videos").innerHTML = (d.videos || []).map(v =>
+    `<figure><video src="${v.src}" controls preload="metadata" playsinline></video><figcaption>${v.caption}</figcaption></figure>`).join("");
+}).catch(() => {});
+</script>
+</body>
+</html>

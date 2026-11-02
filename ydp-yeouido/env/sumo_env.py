@@ -44,6 +44,13 @@ def sumo_runtime_args():
     return []
 
 
+def _seg_point_dist(px, py, ax, ay, bx, by):
+    dx, dy = bx - ax, by - ay
+    L2 = dx * dx + dy * dy
+    t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
+    return math.hypot(px - ax - t * dx, py - ay - t * dy)
+
+
 def _traci_module(gui):
     if gui:
         import traci
@@ -107,6 +114,8 @@ class YdpCityEnv(gym.Env):
 
         self.net = sumolib.net.readNet(P(f"{NAME}.net.xml"), withInternal=False)
         self.edge_speed = {e.getID(): e.getSpeed() for e in self.net.getEdges()}
+        self._node_edges = {n.getID(): {x.getID() for x in n.getIncoming() + n.getOutgoing()}
+                            for n in self.net.getNodes()}
         self.route_len = {k: sum(self.net.getEdge(e).getLength() for e in r["edges"])
                           for k, r in self.routes.items()}
 
@@ -261,10 +270,10 @@ class YdpCityEnv(gym.Env):
         T = self.T
         if offset == 0:
             if leader:
-                res = T.vehicle.getLeader(self.ego_id, self.visibility)
-                if not res or res[0] == "":
+                obst = self._path_obstacle(self.visibility)
+                if obst is None or obst[0] < 0 or obst[0] > self.visibility:
                     return None
-                vid, gap = res
+                return float(obst[0]), float(obst[1])
             else:
                 vid, gap = T.vehicle.getFollower(self.ego_id, self.visibility)
                 if vid == "":
@@ -524,15 +533,178 @@ class YdpCityEnv(gym.Env):
         except Exception:
             return False
 
-    def _shield_speed(self, v_des):
-        """앞차가 최대 감속으로 급정거해도 추돌하지 않는 최대 속도(Gipps)로 제한."""
+    def _junction_blockers(self, horizon=80.0):
+        """교차로 상충 구역을 막고 있는(또는 막 진입하는) 상대 차량 → [(내 상충점까지 거리, id)].
+
+        SUMO는 '교차로 안에 이미 들어와 멈춘 교차 방향 차량'에 대한 감속을 안전거리 계산(speedMode bit0)에
+        포함하는데, 이 환경은 추돌 회피를 정책이 배우도록 bit0을 끄므로 직접 감지해 관측·안전 필터에 넣는다.
+        (예: 초록 신호 직진 중 이전 현시에 진입해 교차로에 갇힌 좌회전 차량)
+        """
         T = self.T
-        res = T.vehicle.getLeader(self.ego_id, 150.0)
-        if not res or res[0] == "":
+        out = []
+        try:
+            foes = T.vehicle.getJunctionFoes(self.ego_id, horizon)
+        except Exception:
+            return out
+        for f in foes:
+            fid, ego_d, foe_d, _ego_exit, foe_exit = f[0], f[1], f[2], f[3], f[4]
+            if ego_d < -0.5:
+                continue
+            try:
+                fv = T.vehicle.getSpeed(fid)
+            except Exception:
+                continue
+            # 상충 '기준선' 통과(foe_exit ≤ 0)만으로는 부족 — 비스듬히 교차하면 차체가 아직 내 경로에 걸쳐
+            # 있다. 느린(갇힌) 차량은 차체 길이만큼 더 지나갈 때까지 장애물로 본다.
+            if foe_exit <= (-6.0 if fv < 3.0 else 0.0):
+                continue
+            inside = foe_d <= 0.5                               # 상대 앞부분이 이미 상충 구역 안
+            entering = foe_d < 6.0 and fv * 1.5 >= foe_d        # 1.5 s 안에 들어옴
+            if inside or entering:
+                out.append((max(ego_d, 0.0), fid))
+        return out
+
+    def _path_polyline(self, horizon=30.0):
+        """ego 앞쪽 주행 경로 중심선 [(x, y, s)] — 현재 차선 → 교차로 내부 차선 → 다음 차선 (s = 경로 거리)."""
+        T = self.T
+        pts = []
+        try:
+            lane = T.vehicle.getLaneID(self.ego_id)
+            pos = T.vehicle.getLanePosition(self.ego_id)
+        except Exception:
+            return pts
+        lanes = [(lane, pos)]
+        try:
+            links = T.vehicle.getNextLinks(self.ego_id)
+            if links:
+                if links[0][4]:
+                    lanes.append((links[0][4], 0.0))      # 교차로 내부 차선 (via)
+                lanes.append((links[0][0], 0.0))
+            elif lane.startswith(":"):
+                lk = T.lane.getLinks(lane)
+                if lk:
+                    lanes.append((lk[0][0], 0.0))
+        except Exception:
+            pass
+        s_total = 0.0
+        self._path_lanes = [lid for lid, _ in lanes]
+        for lid, start in lanes:
+            try:
+                shape = T.lane.getShape(lid)
+            except Exception:
+                break
+            acc = 0.0
+            for (x0, y0), (x1, y1) in zip(shape, shape[1:]):
+                seg = math.hypot(x1 - x0, y1 - y0)
+                if seg <= 1e-6:
+                    continue
+                a0 = max(start - acc, 0.0)
+                d = a0
+                while d <= seg:
+                    if acc + d >= start:
+                        t = d / seg
+                        pts.append((x0 + t * (x1 - x0), y0 + t * (y1 - y0), s_total + (acc + d - start)))
+                    d += 1.0
+                acc += seg
+            s_total += max(acc - start, 0.0)
+            if s_total >= horizon:
+                break
+        return [p for p in pts if p[2] <= horizon]
+
+    def _geometric_blockers(self, horizon=30.0):
+        """경로 중심선과 차체가 겹치는 '교차 방향' 또는 '거의 정지한' 차량 → [(경로 거리, id)].
+
+        SUMO 상충 목록(getJunctionFoes)은 상대 앞부분이 교차로를 벗어나면 사라지지만 차체 뒷부분은
+        아직 내 경로에 걸쳐 있을 수 있다 → 실제 차체(앞 범퍼 위치·방향·길이)로 직접 검사한다.
+        같은 방향으로 나란히 가는 옆 차로 차량은 제외 (방향차 < 25° 이고 움직이는 차량).
+        """
+        T = self.T
+        path = self._path_polyline(horizon)
+        if len(path) < 2:
+            return []
+        ex, ey = T.vehicle.getPosition(self.ego_id)
+        ego_ang = T.vehicle.getAngle(self.ego_id)
+        try:
+            leader = T.vehicle.getLeader(self.ego_id, horizon + 10)
+        except Exception:
+            leader = None
+        lead_id = leader[0] if leader else ""
+        # 같은 평면에서 실제로 만날 수 있는 차량만: 내 경로 차로의 엣지, 그리고 경로상 교차로의 내부 차로.
+        #   (2D 거리만 보면 고가·지하차도 아래위로 지나는 차량을 장애물로 오인한다 — 올림픽대로 램프 사례)
+        path_edges, junctions = set(), set()
+        for lid in getattr(self, "_path_lanes", []):
+            eid = lid.rsplit("_", 1)[0]
+            path_edges.add(eid)
+            if eid.startswith(":"):
+                node = eid[1:].rsplit("_", 1)[0]
+            else:
+                try:
+                    node = self.net.getEdge(eid).getToNode().getID()
+                except Exception:
+                    continue
+            junctions.add(":" + node + "_")
+            path_edges.update(self._node_edges.get(node, ()))   # 그 교차로의 진입·진출 엣지
+        out = []
+        r2 = (horizon + 15.0) ** 2
+        for vid in T.vehicle.getIDList():
+            if vid == self.ego_id or vid == lead_id:
+                continue
+            fx, fy = T.vehicle.getPosition(vid)
+            if (fx - ex) ** 2 + (fy - ey) ** 2 > r2:
+                continue
+            road = T.vehicle.getRoadID(vid)
+            if road not in path_edges and not any(road.startswith(j) for j in junctions):
+                continue
+            # 상대 앞부분이 내 앞 범퍼보다 뒤에 있으면(옆에서 합류 대기 중 등) 내게 양보할 차량 → 제외
+            eh = math.radians(ego_ang)
+            if (fx - ex) * math.sin(eh) + (fy - ey) * math.cos(eh) < 0.5:
+                continue
+            ang = T.vehicle.getAngle(vid)
+            dang = abs((ang - ego_ang + 180.0) % 360.0 - 180.0)
+            v = T.vehicle.getSpeed(vid)
+            if dang < 25.0 and v > 1.0:
+                continue
+            L = T.vehicle.getLength(vid)
+            th = math.radians(ang)                          # SUMO 각도: 북쪽 0°, 시계방향
+            bx, by = fx - L * math.sin(th), fy - L * math.cos(th)
+            half = 0.5 * (T.vehicle.getWidth(vid) + 1.8) + 0.3
+            for px, py, s in path:
+                if _seg_point_dist(px, py, fx, fy, bx, by) < half:
+                    out.append((s, vid))
+                    break
+        return out
+
+    def _path_obstacle(self, horizon):
+        """진행 경로상 가장 가까운 장애물 (간격 m, 속도 m/s, 감속능력): 같은 차선 선행차 또는 교차로 상충 차량.
+        같은 시뮬레이션 시각·horizon 이면 캐시 (관측·보상·안전필터가 한 스텝에 여러 번 부름)."""
+        T = self.T
+        key = (T.simulation.getTime(), horizon)
+        if getattr(self, "_obst_cache_key", None) == key:
+            return self._obst_cache_val
+        best = self._path_obstacle_uncached(horizon)
+        self._obst_cache_key, self._obst_cache_val = key, best
+        return best
+
+    def _path_obstacle_uncached(self, horizon):
+        T = self.T
+        best = None
+        res = T.vehicle.getLeader(self.ego_id, horizon)
+        if res and res[0] != "":
+            lid, gap = res
+            best = (gap, T.vehicle.getSpeed(lid), max(T.vehicle.getDecel(lid), 1.0))
+        blockers = self._junction_blockers(min(horizon, 80.0)) + self._geometric_blockers(min(horizon, 30.0))
+        for d, _fid in blockers:
+            gap = d - 1.0
+            if best is None or gap < best[0]:
+                best = (gap, 0.0, 9.0)                 # 상충점에 정지한 장애물로 취급
+        return best
+
+    def _shield_speed(self, v_des):
+        """진행 경로 장애물(선행차·교차로 상충 차량)이 최대 감속으로 멈춰도 추돌하지 않는 속도(Gipps)로 제한."""
+        obst = self._path_obstacle(150.0)
+        if obst is None:
             return v_des, False
-        lid, gap = res
-        vl = T.vehicle.getSpeed(lid)
-        bl = max(T.vehicle.getDecel(lid), 1.0)
+        gap, vl, bl = obst
         b, tau = self.max_decel, self.shield_tau
         room = gap - self.shield_min_gap + vl * vl / (2 * bl)
         v_safe = -b * tau + math.sqrt(max(0.0, (b * tau) ** 2 + 2 * b * max(room, 0.0)))
