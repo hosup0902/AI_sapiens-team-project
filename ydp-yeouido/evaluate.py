@@ -76,7 +76,10 @@ def run_worker(args, episodes, wid):
                          "mean_speed_kmh": 3.6 * float(np.mean(speeds)) if speeds else 0.0,
                          "min_gap_m": float(np.min(gaps)) if gaps else None,
                          "shield_rate": shield / max(n, 1), "lane_changes": lc,
-                         "progress": float(inf["progress"] or 0), "start_time": t0})
+                         "progress": float(inf["progress"] or 0), "start_time": t0,
+                         "collision_info": inf.get("collision_info")})
+            if inf.get("collision_info"):
+                print(f"[w{wid}]   충돌 상세: {inf['collision_info']}", flush=True)
             print(f"[w{wid}] ep {ep:3d} {info['route']:22s} {outcome:9s} {n * env.step_length:6.0f}s "
                   f"{rows[-1]['mean_speed_kmh']:5.1f} km/h shield {rows[-1]['shield_rate']:.1%}", flush=True)
     finally:

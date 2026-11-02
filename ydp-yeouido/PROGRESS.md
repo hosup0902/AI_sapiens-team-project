@@ -62,15 +62,50 @@ OSM 원본을 실제 도로 기준으로 SUMO 도로망을 항목별 대조 (202
 (4) 회전 전용차로·포켓 길이, 버스전용차로 미반영. (1)은 로드뷰로 확인해 `road_config.NETWORK["osm_fixes"]`의
 `"name:<도로명>"` 보정으로 채운다.
 
+## AV 학습 파이프라인 (2026-11-02 세션)
+
+| 단계 | 내용 | 파일 |
+|---|---|---|
+| 환경 | Gymnasium `YdpCityEnv`: 교통 스냅샷(900~3300 s) reset, 7개 OD, 관측 44차원(수업 31 + 신호·교차로·경로 차로·TTC), 행동 [가감속, 차선], 오토홀드, 차선변경 안전·경로 게이트, 종방향 안전 필터 | `env/sumo_env.py`, `env/mdp_config.py` |
+| 교차로 장애물 인식 | SUMO `getJunctionFoes` + 같은 평면 기하 검사(경로 중심선 ↔ 차체)로 교차로에 갇힌 교차 차량을 경로 장애물로 관측 | `_junction_blockers`, `_geometric_blockers` |
+| 전문가 | IDM + 신호 정지 + 추월 (관측만 사용) — 100 ep: 충돌 1 %, 완주 98 % | `expert_policy.py` |
+| PPO | 수업 PPO(hybrid). 전문가 데이터로 BC 초기화 → 필터 ON 8.2만 스텝 → 필터 OFF 미세조정 → 오토홀드 후 미세조정 | `train.py`, `results/final/` |
+| 평가 | 100 ep, 경로 순환, 충돌 상세 기록 | `evaluate.py` |
+| 데이터 | 수업 필수 컬럼 + 도시망 확장, 병렬, 부모 종료 시 워커 종료 | `collect_pomdp_data.py` |
+| BC | 수업 `train_bc.py`로 PPO 수집 데이터 모방 | `results/bc_final/` |
+| 영상 | 헤드리스 sumo-gui(xvfb) 캡처 + 한글 정보 패널 → mp4 | `tools/record_video.py`, `assets/video/` |
+| 페이지 | 정적 프로젝트 페이지 + 결과 주입 | `docs/index.html`, `tools/build_site.py` |
+
+### 최종 결과 (100 에피소드)
+
+| 정책 | 충돌률 | 완주율 | 비고 |
+|---|---:|---:|---|
+| **PPO 최종 (안전 필터 ON)** | **3 %** | **97 %** | AV 과실 1 %, 2건은 HV가 AV를 들이받음. 필터 개입 0.17 % |
+| PPO 최종 (필터 OFF) | 3 % | 96 % | 교착 1 % |
+| PPO 필터 ON 학습만 (필터 OFF로 평가) | 7 % | 92 % | 필터 의존 → 필터 OFF 미세조정 계기 |
+| 전문가 (필터 ON / OFF, 오토홀드 이전) | 1 % / 1 % | 98 % / 99 % | |
+
+### 이번 세션에서 겪은 문제와 해결 (발표 '문제 해결' 소재)
+
+1. 고정 경로 과포화 → 60 s 동적 재경로 (텔레포트 255 → 28, 잔류 342 → 0)
+2. `collision.action=warn`의 연쇄 충돌 집계 → remove
+3. 노들로 70 km/h 3차로 횡단 비보호 좌회전 → 국내 법규 기준 금지 규칙
+4. AV가 교차로 안 갇힌 차량과 충돌 (SUMO 교차로 감속이 bit0에 묶임) → 경로 장애물 인식
+5. 기하 검사가 고가 아래 차량·합류 대기 차량을 오인 → 같은 평면·차체 기준 판정
+6. `pkill`로 중단한 수집의 고아 워커가 같은 파일에 계속 기록 → 부모 감시 후 종료
+7. PyTorch 스레드 경합으로 BC 초기화가 수십 배 느려짐 → 스레드 2개
+8. PPO 필터 의존(필터 OFF 시 7 %) → 필터 OFF 미세조정
+9. 정지 중 미세 전진 추돌 → 오토홀드 (필터 OFF 충돌 10 % → 1~3 %)
+
 ## 다음 할 일
 
 0. (로컬) `python tools/fetch_osm.py --force` → `python -m env.road_builder` 로 회전 제한 반영, 간선 차로 수 확인·보정
-1. 안정성: 남은 정체 지점 국회대로(1413206559, 470218954) · 영등포로 로터리 접근(-1412419148, -456710473) · 서울교(453143057#1) · 버드나루로(-464777204)
-   - 아직 과포화면 `TRAFFIC["period"]` 0.55 → 0.7~0.8 (약 4,500~5,100 대/h) 로 조정하거나 남은 정체 지점을 `join_clusters`/`osm_fixes`로 보정
-   - 목표: 텔레포트 ≈ 0, 충돌 ≈ 0, 수요 종료 후 전량 해소. 최종 확인은 `--step 0.1`, 여러 seed
-2. `view_road.py` (수업 구조와 같은 GUI 확인 스크립트) 작성 — sumo-gui `ydp.sumocfg` (real world 스킴, 건물 표시)
-3. `env/sumo_env.py` / `mdp_config.py`: 수업 코드의 Gymnasium 환경을 이 도시망에 맞게 — AV를 `av_routes.json` 경로로 투입, 관측에 신호 상태·정지선 거리·경로 차로 정보 추가
-4. 전문가 정책 → BC → PPO, `collect_pomdp_data.py`로 10^7 transition, HuggingFace 업로드, 프로젝트 페이지
+   - 도로망이 바뀌면 관측 의미가 바뀌므로 전문가 데이터 → PPO를 다시 학습할 것
+1. 10^7 transition: `python collect_pomdp_data.py --model results/final/model.pt --episodes 6000 --workers <코어수> --no-jsonl --name ydp_ppo_bulk_02`
+2. HuggingFace 업로드: `python tools/upload_hf.py --repo <id>/ydp-yeouido-av --files "data/ydp_ppo_*"`
+3. 프로젝트 페이지: `python tools/build_site.py ... --hf <링크> --slides <링크>` 후 GitHub Pages 게시
+4. 발표자료(13분), 팀 역할 분담, 30초 이상 영상(assets/video) 삽입
+5. (개선) 교차로 피추돌 감소: 여의교 북단 등 HV 충돌 다발 교차로 형상 보정, AV 교차로 진입 시 상충 차량 TTC 관측 추가
 
 ## 빌드 / 실행
 
@@ -79,8 +114,9 @@ pip install -r requirements.txt
 python tools/fetch_osm.py                 # data/osm/region.osm 이 이미 있으면 건너뜀
 python -m env.road_builder                # 전체 생성 (--only net|poly|traffic|av)
 python tools/render_map.py --tls --labels # assets/figures/map_full.png
-python tools/stability_test.py --end 3600 --hotspots
-sumo-gui -c env/sumo/ydp.sumocfg
+python tools/stability_test.py --end 4800 --step 0.5 --hotspots
+python view_road.py                       # sumo-gui (수업 view_road.py 대응)
+python evaluate.py --model results/final/model.pt --episodes 100 --workers 4
 ```
 
 주의: Windows에서 SUMO는 한글 경로를 처리하지 못하므로 `road_builder._run`이 `env/sumo`에서 상대경로로 실행한다.

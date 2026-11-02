@@ -80,6 +80,10 @@ ACTION = {
     "lane_change_values": (-1, 0, 1),
     "lane_change_threshold": 0.5,
     "lane_change_duration": 2.0,
+    # 정지 유지(오토홀드): 정지(< 0.1 m/s) 상태에서는 가속 출력이 이 값(×max_accel ≈ 0.45 m/s²) 이상일 때만 출발.
+    #   연속 가속도 정책은 정지 중 평균 출력이 0보다 조금만 커도 신호 대기 동안 앞차로 조금씩 밀려 나가
+    #   추돌한다(필터 없는 PPO 충돌 10건 중 9건이 0.1~0.6 km/h 추돌). 실제 차량의 브레이크 홀드와 같은 역할.
+    "standstill_hold": 0.15,
     "speed_mode": 0b011110,          # bit1,2(가감속 한계) + bit3(우선권) + bit4(적색 정지), bit0(안전거리) 끔
     "lane_change_mode": 0b0100000001,  # 전략적 변경 O, TraCI 명령은 즉시 충돌만 회피(bit8)
     "lane_change_safety": {

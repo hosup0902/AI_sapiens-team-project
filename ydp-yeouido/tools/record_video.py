@@ -100,7 +100,7 @@ def main():
                     (f"속도 {3.6 * st.get('ego_speed', 0):5.1f} km/h / 제한 {3.6 * st.get('speed_limit', 0):.0f}",
                      (120, 230, 255)),
                     (f"다음 신호: {sig}", (255, 220, 120)),
-                    (f"진행 {100 * st.get('route_progress_m', 0) / max(st.get('route_length_m', 1), 1):5.1f} %"
+                    (f"진행 {min(100.0, 100 * st.get('route_progress_m', 0) / max(st.get('route_length_m', 1), 1)):5.1f} %"
                      f"  ·  주변 150 m 차량 {len(st.get('vehicles', []))}대  ·  t={T.simulation.getTime():.0f}s",
                      (200, 255, 200)),
                 ])

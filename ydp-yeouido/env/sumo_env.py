@@ -141,6 +141,7 @@ class YdpCityEnv(gym.Env):
         self.lane_change_threshold = float(action.get("lane_change_threshold", 0.5))
         self.lane_change_duration = float(action.get("lane_change_duration", 2.0))
         self.speed_mode = int(action.get("speed_mode", 0b011110))
+        self.standstill_hold = float(action.get("standstill_hold", 0.0))
         self.lc_mode = int(action.get("lane_change_mode", 0b0100000001))
         lcs = action.get("lane_change_safety") or {}
         self.lc_safety_enabled = bool(lcs.get("enabled", True))
@@ -731,6 +732,8 @@ class YdpCityEnv(gym.Env):
             accel_cmd = accel_raw * (self.max_accel if accel_raw >= 0 else self.max_decel)
             vlim = T.vehicle.getAllowedSpeed(self.ego_id)
             v_des = float(np.clip(v + accel_cmd * self.step_length, 0.0, min(vlim, self.ego_max_speed)))
+            if v < 0.1 and accel_raw < self.standstill_hold:      # 정지 유지(오토홀드)
+                v_des = 0.0
             if self.shield_enabled:
                 v_des, shield_on = self._shield_speed(v_des)
             T.vehicle.setSpeed(self.ego_id, v_des)
@@ -740,6 +743,18 @@ class YdpCityEnv(gym.Env):
         self.step_count += 1
 
         collided = self.ego_id in T.simulation.getCollidingVehiclesIDList()
+        collision_info = None
+        if collided:
+            for c in T.simulation.getCollisions():
+                if self.ego_id in (c.collider, c.victim):
+                    other = c.victim if c.collider == self.ego_id else c.collider
+                    collision_info = {"type": c.type, "lane": c.lane, "other": other,
+                                      "ego_is_collider": c.collider == self.ego_id,
+                                      "ego_speed": c.colliderSpeed if c.collider == self.ego_id else c.victimSpeed,
+                                      "other_speed": c.victimSpeed if c.collider == self.ego_id else c.colliderSpeed,
+                                      "road_name": self._edge_name(c.lane.rsplit("_", 1)[0]),
+                                      "lane_change": lane_change}
+                    break
         arrived = self.ego_id in T.simulation.getArrivedIDList()
         teleported = self.ego_id in T.simulation.getStartingTeleportIDList()
         alive = self.ego_id in T.vehicle.getIDList()
@@ -813,6 +828,7 @@ class YdpCityEnv(gym.Env):
             "accel_raw": accel_raw, "lane_change_raw": lane_raw, "lane_change": lane_change,
             "lane_change_applied": lane_applied, "lane_before": lane_before, "lane_after": lane_after,
             "shield": shield_on, "sim_time": T.simulation.getTime(),
+            "collision_info": collision_info,
         }
         return obs, float(reward), terminated, truncated, info
 

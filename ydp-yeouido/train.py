@@ -137,6 +137,9 @@ def main():
     ap.add_argument("--eval-episodes", type=int, default=7)
     ap.add_argument("--run-name", default=None)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--no-shield", action="store_true",
+                    help="안전 필터 없이 학습·평가 — 충돌 회피를 정책이 직접 배우게 한다")
+    ap.add_argument("--lr", type=float, default=None)
     a = ap.parse_args()
 
     # 환경(SUMO) 스텝이 병목이고 신경망은 작다 → 스레드를 줄여 평가·수집 프로세스와의 CPU 경합(OpenMP 대기)을 막는다
@@ -154,9 +157,9 @@ def main():
     print(f"결과 폴더: {run_dir}")
 
     # libsumo는 프로세스당 SUMO 하나 → 학습·평가가 같은 환경을 쓴다 (수업 코드와 동일)
-    env = make_env(seed=a.seed, route_mode="random")
+    env = make_env(seed=a.seed, route_mode="random", shield=not a.no_shield)
     agent = PPO(obs_dim=env.observation_space.shape[0], act_dim=env.action_space.shape[0],
-                buffer=RolloutBuffer(), **{**HPARAMS, "seed": a.seed})
+                buffer=RolloutBuffer(), **{**HPARAMS, "seed": a.seed, **({"lr": a.lr} if a.lr else {})})
     if a.init:
         agent.load(a.init)
         print(f"초기 가중치: {a.init}")
@@ -195,6 +198,7 @@ def main():
                 "std": agent.policy.current_std, **stats})
             if a.eval_interval and n_updates % a.eval_interval == 0:
                 m = evaluate(f"upd {n_updates}")
+                logger.save_csv()                 # 강제 종료돼도 곡선이 남도록 평가 때마다 저장
                 obs, _ = env.reset()
                 ep_stats[0], ep_stats[1] = 0.0, 0
                 agent.save(os.path.join(run_dir, "model_last.pt"))
