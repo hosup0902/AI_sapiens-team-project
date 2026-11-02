@@ -304,7 +304,7 @@ def main():
         total = sum(r[0] for r in res)
         stats = [r[1] for r in res]
         merge_parts(parts, jsonl_path, npz_path)
-    if not args.jsonl and os.path.exists(jsonl_path) and os.path.getsize(jsonl_path) < 100:
+    if not args.jsonl and os.path.exists(jsonl_path) and os.path.getsize(jsonl_path) < 1024:
         os.remove(jsonl_path)
     el = time.time() - t0
     agg = {k: sum(s[k] for s in stats) for k in stats[0]}
