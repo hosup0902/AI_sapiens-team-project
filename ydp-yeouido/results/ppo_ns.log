@@ -1,0 +1,20 @@
+결과 폴더: /home/user/AI_sapiens-team-project/ydp-yeouido/results/ppo_noshield
+초기 가중치: results/ppo_main/model.pt
+    [eval @0] 14ep  [init] 충돌률=29%  완주율=64%  평균속도=5.7m/s  평균차간=14.5m  최소차간=0.0m  차선변경=0.6회  보상=47.2
+[update    1] steps=   4096  ep_rew_mean=22.99  std=0.3  policy_loss=0.0005822  value_loss=1.199  entropy=0.2168  approx_kl=0.003342  clip_frac=0.0856  p_lane_change=0.001172
+[update    2] steps=   8192  ep_rew_mean=29.53  std=0.3  policy_loss=0.0003888  value_loss=0.898  entropy=0.2192  approx_kl=0.001473  clip_frac=0.08345  p_lane_change=0.004303
+[update    3] steps=  12288  ep_rew_mean=33.86  std=0.2998  policy_loss=-0.0009999  value_loss=0.7753  entropy=0.2171  approx_kl=0.000226  clip_frac=0.07583  p_lane_change=0.001804
+[update    4] steps=  16384  ep_rew_mean=34.03  std=0.3  policy_loss=-0.0006935  value_loss=1.116  entropy=0.2173  approx_kl=0.001631  clip_frac=0.0769  p_lane_change=0.002037
+[update    5] steps=  20480  ep_rew_mean=35.24  std=0.3  policy_loss=0.001025  value_loss=1.508  entropy=0.2165  approx_kl=0.0021  clip_frac=0.08774  p_lane_change=0.0009413
+    [eval @20480] 14ep  [upd 5] 충돌률=7%  완주율=93%  평균속도=5.9m/s  평균차간=16.6m  최소차간=0.0m  차선변경=0.5회  보상=71.6
+  ★ best 갱신: 충돌률=7%  완주율=93%  평균속도=5.9m/s  평균차간=16.6m  최소차간=0.0m  차선변경=0.5회  보상=71.6
+[update    6] steps=  24576  ep_rew_mean=33.09  std=0.2995  policy_loss=0.00111  value_loss=0.9835  entropy=0.216  approx_kl=0.002066  clip_frac=0.08564  p_lane_change=0.0005226
+[update    7] steps=  28672  ep_rew_mean=36.89  std=0.2991  policy_loss=-0.0005518  value_loss=0.6682  entropy=0.2139  approx_kl=0.002544  clip_frac=0.0793  p_lane_change=0.0006571
+[update    8] steps=  32768  ep_rew_mean=37.4  std=0.2993  policy_loss=-0.0003664  value_loss=1.255  entropy=0.2132  approx_kl=0.001646  clip_frac=0.08213  p_lane_change=0.0006248
+[update    9] steps=  36864  ep_rew_mean=33.38  std=0.2994  policy_loss=-0.001677  value_loss=1.301  entropy=0.2163  approx_kl=0.002302  clip_frac=0.09917  p_lane_change=0.002348
+[update   10] steps=  40960  ep_rew_mean=27.42  std=0.2993  policy_loss=-0.0007157  value_loss=1.517  entropy=0.2162  approx_kl=0.003298  clip_frac=0.07803  p_lane_change=0.0009742
+    [eval @40960] 14ep  [upd 10] 충돌률=36%  완주율=64%  평균속도=6.0m/s  평균차간=15.8m  최소차간=0.0m  차선변경=0.4회  보상=49.2
+[update   11] steps=  45056  ep_rew_mean=26.42  std=0.2991  policy_loss=-0.001338  value_loss=1.135  entropy=0.2139  approx_kl=0.001453  clip_frac=0.06641  p_lane_change=0.001026
+[update   12] steps=  49152  ep_rew_mean=16.4  std=0.2989  policy_loss=-0.0006092  value_loss=1.473  entropy=0.2128  approx_kl=0.001016  clip_frac=0.09238  p_lane_change=0.0006165
+[update   13] steps=  53248  ep_rew_mean=21.35  std=0.2986  policy_loss=0.0006148  value_loss=0.9982  entropy=0.2123  approx_kl=0.00178  clip_frac=0.07656  p_lane_change=0.0006195
+[update   14] steps=  57344  ep_rew_mean=28.53  std=0.2981  policy_loss=0.004322  value_loss=1.024  entropy=0.2131  approx_kl=0.005895  clip_frac=0.1235  p_lane_change=0.001692

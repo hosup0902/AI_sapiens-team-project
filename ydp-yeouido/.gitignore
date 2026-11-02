@@ -12,11 +12,5 @@ env/sumo/*.tls_offsets.xml
 env/sumo/osm_ko.typ.xml
 # 진단용 이미지 / 결과
 assets/figures/jam_*.png
-# 학습/평가 결과: 최종 제출본(results/final/)만 커밋
-results/*
-!results/final/
-results/final/**/tb/
-env/sumo/snapshots/
 env/sumo/view_av.rou.xml
-data/*.npz
-data/*.jsonl*
+# 데이터셋·학습 결과·교통 스냅샷은 모두 저장소에 포함 (2026-11-02)

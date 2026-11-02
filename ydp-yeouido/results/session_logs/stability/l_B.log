@@ -1,0 +1,29 @@
+Loading net-file from 'ydp.net.xml' ... done (1308ms).
+Loading additional-files from 'ydp.vtypes.xml' ... done (1ms).
+Loading additional-files from 'ydp.tls.xml' ... done (86ms).
+Loading additional-files from 'ydp.poly.xml' ... done (20ms).
+Loading route-files incrementally from 'ydp.rou.xml'
+Loading done.
+Simulation version 1.28.0 started with time: 0.00.
+Simulation ended at time: 2400.00.
+Reason: The final simulation step has been reached.
+Performance:
+ Duration: 65.36s
+ Real time factor: 36.7191
+ UPS: 56424.901700
+Vehicles:
+ Inserted: 4358 (Loaded: 4370)
+ Running: 908
+ Waiting: 5
+ Teleports: 16 (Collisions: 26, Jam: 7, Yield: 9)
+ Emergency Stops: 4
+ Emergency Braking: 86
+Statistics (avg of 3450):
+ RouteLength: 3308.58
+ Speed: 7.75
+ Duration: 451.52
+ WaitingTime: 127.80
+ TimeLoss: 197.54
+ DepartDelay: 1.15
+DijkstraRouter answered 32289 queries and explored 1482.64 edges on average.
+DijkstraRouter spent 25.28s answering queries (0.78ms on average).

@@ -1,0 +1,28 @@
+결과 폴더: /home/user/AI_sapiens-team-project/ydp-yeouido/results/ppo_main2
+초기 가중치: results/ppo_main/model_last.pt
+    [eval @0] 7ep  [init] 충돌률=0%  완주율=100%  평균속도=5.4m/s  평균차간=11.8m  최소차간=0.0m  차선변경=0.4회  보상=65.1
+[update    1] steps=   4096  ep_rew_mean=49.69  std=0.3  policy_loss=-0.002253  value_loss=0.8095  entropy=0.2188  approx_kl=0.0009522  clip_frac=0.06255  p_lane_change=0.003224
+[update    2] steps=   8192  ep_rew_mean=44.6  std=0.2998  policy_loss=-0.00131  value_loss=0.9597  entropy=0.2174  approx_kl=0.00119  clip_frac=0.05166  p_lane_change=0.001672
+[update    3] steps=  12288  ep_rew_mean=36.02  std=0.2998  policy_loss=-0.001211  value_loss=0.8507  entropy=0.2163  approx_kl=0.0003358  clip_frac=0.06328  p_lane_change=0.001127
+[update    4] steps=  16384  ep_rew_mean=36.01  std=0.2994  policy_loss=-0.002008  value_loss=0.8219  entropy=0.2156  approx_kl=0.001289  clip_frac=0.06611  p_lane_change=0.001671
+[update    5] steps=  20480  ep_rew_mean=28.25  std=0.2992  policy_loss=-0.002335  value_loss=1.011  entropy=0.2147  approx_kl=0.001059  clip_frac=0.08076  p_lane_change=0.001353
+    [eval @20480] 7ep  [upd 5] 충돌률=0%  완주율=100%  평균속도=6.5m/s  평균차간=14.6m  최소차간=0.0m  차선변경=0.7회  보상=62.9
+  ★ best 갱신: 충돌률=0%  완주율=100%  평균속도=6.5m/s  평균차간=14.6m  최소차간=0.0m  차선변경=0.7회  보상=62.9
+[update    6] steps=  24576  ep_rew_mean=28.73  std=0.299  policy_loss=-0.00075  value_loss=1.203  entropy=0.2176  approx_kl=0.0008462  clip_frac=0.05  p_lane_change=0.007032
+[update    7] steps=  28672  ep_rew_mean=31.9  std=0.2988  policy_loss=-0.0008893  value_loss=0.8168  entropy=0.2139  approx_kl=0.000918  clip_frac=0.04058  p_lane_change=0.001612
+[update    8] steps=  32768  ep_rew_mean=28.48  std=0.2985  policy_loss=-0.001091  value_loss=0.7058  entropy=0.2122  approx_kl=0.0003255  clip_frac=0.03999  p_lane_change=0.001472
+[update    9] steps=  36864  ep_rew_mean=31.94  std=0.2982  policy_loss=-0.001364  value_loss=1.109  entropy=0.2112  approx_kl=0.002295  clip_frac=0.04849  p_lane_change=0.001048
+[update   10] steps=  40960  ep_rew_mean=30.33  std=0.298  policy_loss=-0.001156  value_loss=1.167  entropy=0.2113  approx_kl=0.0008326  clip_frac=0.03882  p_lane_change=0.001349
+    [eval @40960] 7ep  [upd 10] 충돌률=0%  완주율=100%  평균속도=6.9m/s  평균차간=17.6m  최소차간=0.0m  차선변경=0.7회  보상=63.4
+  ★ best 갱신: 충돌률=0%  완주율=100%  평균속도=6.9m/s  평균차간=17.6m  최소차간=0.0m  차선변경=0.7회  보상=63.4
+[update   11] steps=  45056  ep_rew_mean=30.24  std=0.2981  policy_loss=-0.000822  value_loss=1.007  entropy=0.2123  approx_kl=0.001233  clip_frac=0.04331  p_lane_change=0.002281
+[update   12] steps=  49152  ep_rew_mean=25.97  std=0.2981  policy_loss=-0.0002758  value_loss=1.232  entropy=0.2123  approx_kl=0.0004497  clip_frac=0.05615  p_lane_change=0.001648
+[update   13] steps=  53248  ep_rew_mean=26.68  std=0.2978  policy_loss=-0.001193  value_loss=0.845  entropy=0.2122  approx_kl=0.001097  clip_frac=0.05254  p_lane_change=0.003218
+[update   14] steps=  57344  ep_rew_mean=35.33  std=0.2978  policy_loss=0.001873  value_loss=0.5582  entropy=0.2094  approx_kl=0.0008924  clip_frac=0.0623  p_lane_change=0.001302
+[update   15] steps=  61440  ep_rew_mean=39.53  std=0.2978  policy_loss=-0.001879  value_loss=0.7368  entropy=0.2105  approx_kl=0.001748  clip_frac=0.04844  p_lane_change=0.001177
+    [eval @61440] 7ep  [upd 15] 충돌률=0%  완주율=100%  평균속도=6.7m/s  평균차간=16.1m  최소차간=0.0m  차선변경=0.6회  보상=61.3
+[update   16] steps=  65536  ep_rew_mean=40.32  std=0.2976  policy_loss=0.0004565  value_loss=0.9501  entropy=0.2093  approx_kl=0.001866  clip_frac=0.06309  p_lane_change=0.0008204
+[update   17] steps=  69632  ep_rew_mean=37.93  std=0.2975  policy_loss=-0.001619  value_loss=1.079  entropy=0.2086  approx_kl=0.0007643  clip_frac=0.05952  p_lane_change=0.0008727
+[update   18] steps=  73728  ep_rew_mean=35.59  std=0.2974  policy_loss=-0.0003297  value_loss=0.9408  entropy=0.2098  approx_kl=0.002068  clip_frac=0.05728  p_lane_change=0.001962
+[update   19] steps=  77824  ep_rew_mean=33.22  std=0.2973  policy_loss=0.0001557  value_loss=1.444  entropy=0.2123  approx_kl=0.002949  clip_frac=0.09448  p_lane_change=0.003408
+[update   20] steps=  81920  ep_rew_mean=41.9  std=0.2971  policy_loss=-0.001853  value_loss=0.8162  entropy=0.2076  approx_kl=0.0009608  clip_frac=0.05127  p_lane_change=0.0009636

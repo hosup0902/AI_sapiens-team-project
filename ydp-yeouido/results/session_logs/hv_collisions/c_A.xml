@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-11-02T06:39:08.199765+00:00 by Eclipse SUMO sumo 1.28.0
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="ydp.net.xml"/>
+        <route-files value="ydp.rou.xml"/>
+        <additional-files value="ydp.vtypes.xml,ydp.tls.xml,ydp.poly.xml"/>
+    </input>
+
+    <output>
+        <collision-output value="/tmp/claude-0/-home-user-AI-sapiens-team-project/5b1622b4-e6fa-5370-b22e-02d6b7b3ca39/scratchpad/c_A.xml"/>
+        <statistic-output value="/tmp/claude-0/-home-user-AI-sapiens-team-project/5b1622b4-e6fa-5370-b22e-02d6b7b3ca39/scratchpad/s_A.xml"/>
+    </output>
+
+    <time>
+        <begin value="0"/>
+        <end value="2400"/>
+        <step-length value="0.5"/>
+    </time>
+
+    <processing>
+        <lateral-resolution value="0"/>
+        <ignore-route-errors value="true"/>
+        <collision.action value="warn"/>
+        <collision.check-junctions value="true"/>
+        <time-to-teleport value="180"/>
+        <default.speeddev value="0.1"/>
+    </processing>
+
+    <routing>
+        <device.rerouting.probability value="1"/>
+        <device.rerouting.period value="60"/>
+    </routing>
+
+    <report>
+        <no-warnings value="true"/>
+        <duration-log.statistics value="true"/>
+        <no-step-log value="true"/>
+    </report>
+
+    <random_number>
+        <seed value="42"/>
+    </random_number>
+
+    <gui_only>
+        <gui-settings-file value="ydp.gui.xml"/>
+    </gui_only>
+
+</sumoConfiguration>
+-->
+
+<collisions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/collision_file.xsd">
+    <collision time="637.00" type="junction" lane=":cluster_2815770940_2815775488_10_0" pos="10.63" collider="hv812" victim="hv489" colliderType="hv_krauss" victimType="hv_krauss" colliderSpeed="0.39" victimSpeed="14.85" colliderFront="1302.05,2714.89" colliderBack="1299.89,2719.40" victimFront="1302.29,2719.87" victimBack="1303.70,2715.07"/>
+    <collision time="746.50" type="junction" lane=":cluster_12979317647_2253236136_8_0" pos="3.93" collider="hv730" victim="hv898" colliderType="hv_idm" victimType="hv_acc" colliderSpeed="0.14" victimSpeed="4.95" colliderFront="2367.51,1154.25" colliderBack="2370.85,1157.78" victimFront="2368.35,1154.91" victimBack="2363.95,1157.10"/>
+    <collision time="853.00" type="junction" lane=":cluster_13506574405_8460813248_cluster_13506574409_8401534579_22_0" pos="4.23" collider="hv1296" victim="hv1121" colliderType="hv_eidm" victimType="hv_krauss" colliderSpeed="0.00" victimSpeed="6.65" colliderFront="3165.38,1119.39" colliderBack="3167.22,1114.98" victimFront="3161.83,1117.46" victimBack="3165.46,1120.94"/>
+    <collision time="912.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_3_0" pos="13.83" collider="hv1553" victim="hv1388" colliderType="hv_krauss" victimType="hv_idm" colliderSpeed="0.00" victimSpeed="12.66" colliderFront="1164.17,1286.15" colliderBack="1166.57,1281.77" victimFront="1163.81,1282.58" victimBack="1162.03,1287.25"/>
+    <collision time="1226.50" type="junction" lane=":cluster_4046663120_4046663125_cluster_1129182077_4599059613_9_2" pos="0.50" collider="hv1940" victim="hv2008" colliderType="hv_idm" victimType="hv_krauss" colliderSpeed="2.00" victimSpeed="0.02" colliderFront="1510.44,2088.48" colliderBack="1515.40,2089.45" victimFront="1514.11,2085.92" victimBack="1511.12,2087.77"/>
+    <collision time="1230.00" type="junction" lane=":cluster_4046663120_4046663125_cluster_1129182077_4599059613_9_2" pos="2.65" collider="hv1582" victim="hv2008" colliderType="hv_eidm" victimType="hv_krauss" colliderSpeed="5.70" victimSpeed="0.00" colliderFront="1508.27,2088.12" colliderBack="1513.27,2089.02" victimFront="1514.13,2085.93" victimBack="1511.12,2087.75"/>
+    <collision time="1232.50" type="junction" lane=":cluster_4046663120_4046663125_cluster_1129182077_4599059613_9_2" pos="2.25" collider="hv1686" victim="hv2008" colliderType="hv_idm" victimType="hv_krauss" colliderSpeed="6.76" victimSpeed="0.00" colliderFront="1508.67,2088.18" colliderBack="1513.67,2089.10" victimFront="1514.13,2085.93" victimBack="1511.12,2087.75"/>
+    <collision time="1234.50" type="junction" lane=":cluster_4046663120_4046663125_cluster_1129182077_4599059613_9_2" pos="3.05" collider="hv1834" victim="hv2008" colliderType="hv_krauss" victimType="hv_krauss" colliderSpeed="7.91" victimSpeed="0.00" colliderFront="1507.86,2088.05" colliderBack="1512.88,2088.94" victimFront="1514.13,2085.93" victimBack="1511.12,2087.75"/>
+    <collision time="1333.00" type="junction" lane=":cluster_12979317647_2253236136_8_0" pos="3.11" collider="hv1935" victim="hv1846" colliderType="hv_eidm" victimType="hv_idm" colliderSpeed="3.32" victimSpeed="5.15" colliderFront="2368.25,1154.60" colliderBack="2370.48,1158.48" victimFront="2368.61,1154.78" victimBack="2364.21,1156.97"/>
+    <collision time="1355.00" type="junction" lane=":4529833732_4_0" pos="2.81" collider="hv1781" victim="hv1888" colliderType="hv_acc" victimType="hv_idm" colliderSpeed="1.82" victimSpeed="0.00" colliderFront="1604.89,2133.09" colliderBack="1609.35,2135.33" victimFront="1603.57,2132.89" victimBack="1604.99,2137.68"/>
+    <collision time="1370.50" type="junction" lane=":4617423207_1_0" pos="6.05" collider="hv2047" victim="hv2409" colliderType="hv_krauss" victimType="hv_idm" colliderSpeed="3.11" victimSpeed="7.00" colliderFront="2114.87,1107.67" colliderBack="2117.73,1103.62" victimFront="2116.08,1103.78" victimBack="2114.31,1108.46"/>
+    <collision time="1515.50" type="junction" lane=":cluster_4046663120_4046663125_cluster_1129182077_4599059613_26_1" pos="2.29" collider="hv1736" victim="hv1853" colliderType="hv_bus" victimType="hv_krauss" colliderSpeed="1.27" victimSpeed="0.28" colliderFront="1490.64,2068.87" colliderBack="1482.19,2061.83" victimFront="1486.16,2069.10" victimBack="1490.74,2070.97"/>
+    <collision time="1637.50" type="junction" lane=":cluster_13506574405_8460813248_cluster_13506574409_8401534579_3_2" pos="17.53" collider="hv2589" victim="hv2535" colliderType="hv_idm" victimType="hv_idm" colliderSpeed="3.63" victimSpeed="0.00" colliderFront="3174.60,1150.50" colliderBack="3176.16,1155.22" victimFront="3174.99,1146.73" victimBack="3173.40,1151.40"/>
+    <collision time="1671.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="46.10" collider="hv2615" victim="hv2208" colliderType="hv_idm" victimType="hv_bus" colliderSpeed="12.12" victimSpeed="0.00" colliderFront="1164.11,1281.82" colliderBack="1162.32,1286.49" victimFront="1164.17,1286.15" victimBack="1169.28,1276.41"/>
+    <collision time="1677.50" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="43.75" collider="hv2681" victim="hv2208" colliderType="hv_idm" victimType="hv_bus" colliderSpeed="10.67" victimSpeed="0.00" colliderFront="1163.27,1284.01" colliderBack="1161.48,1288.68" victimFront="1164.17,1286.15" victimBack="1169.28,1276.41"/>
+    <collision time="1684.50" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="46.00" collider="hv2509" victim="hv2208" colliderType="hv_krauss" victimType="hv_bus" colliderSpeed="11.28" victimSpeed="0.00" colliderFront="1164.07,1281.91" colliderBack="1162.28,1286.58" victimFront="1164.17,1286.15" victimBack="1169.28,1276.41"/>
+    <collision time="1686.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="43.06" collider="hv2807" victim="hv2208" colliderType="hv_eidm" victimType="hv_bus" colliderSpeed="11.25" victimSpeed="0.00" colliderFront="1163.02,1284.65" colliderBack="1161.23,1289.32" victimFront="1164.17,1286.15" victimBack="1169.28,1276.41"/>
+    <collision time="1689.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="47.29" collider="hv2871" victim="hv2208" colliderType="hv_idm" victimType="hv_bus" colliderSpeed="10.97" victimSpeed="0.00" colliderFront="1164.53,1280.70" colliderBack="1162.74,1285.37" victimFront="1164.17,1286.15" victimBack="1169.28,1276.41"/>
+    <collision time="1692.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="46.35" collider="hv3030" victim="hv2208" colliderType="hv_idm" victimType="hv_bus" colliderSpeed="10.37" victimSpeed="0.00" colliderFront="1164.20,1281.58" colliderBack="1162.41,1286.25" victimFront="1164.17,1286.15" victimBack="1169.28,1276.41"/>
+    <collision time="1695.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="44.26" collider="hv2358" victim="hv2208" colliderType="hv_idm" victimType="hv_bus" colliderSpeed="9.99" victimSpeed="0.00" colliderFront="1163.45,1283.53" colliderBack="1161.66,1288.20" victimFront="1164.17,1286.15" victimBack="1169.28,1276.41"/>
+    <collision time="1743.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_3_0" pos="13.61" collider="hv2024" victim="hv3063" colliderType="hv_acc" victimType="hv_acc" colliderSpeed="2.43" victimSpeed="0.87" colliderFront="1164.28,1285.97" colliderBack="1166.67,1281.58" victimFront="1164.43,1280.97" victimBack="1162.64,1285.64"/>
+    <collision time="2147.00" type="junction" lane=":cluster_2818212028_2820073679_1_1" pos="6.58" collider="hv3336" victim="hv3718" colliderType="hv_acc" victimType="hv_bus" colliderSpeed="3.59" victimSpeed="7.48" colliderFront="1234.10,309.96" colliderBack="1238.52,312.29" victimFront="1241.42,310.19" victimBack="1230.96,307.00"/>
+    <collision time="2158.00" type="side" lane=":414684910_7_1" pos="9.23" collider="hv3734" victim="hv2585" colliderType="hv_eidm" victimType="hv_idm" colliderSpeed="11.31" victimSpeed="0.00" colliderFront="1634.52,2133.53" colliderBack="1630.05,2131.29" victimFront="1628.94,2135.65" victimBack="1633.55,2133.88"/>
+    <collision time="2232.50" type="side" lane=":414684910_7_1" pos="11.99" collider="hv3383" victim="hv2585" colliderType="hv_eidm" victimType="hv_idm" colliderSpeed="7.93" victimSpeed="0.00" colliderFront="1636.99,2134.77" colliderBack="1632.52,2132.53" victimFront="1628.94,2135.65" victimBack="1633.55,2133.88"/>
+    <collision time="2236.00" type="junction" lane=":cluster_6458379397_6458379412_1_0" pos="32.15" collider="hv2757" victim="hv3985" colliderType="hv_bus" victimType="hv_krauss" colliderSpeed="13.41" victimSpeed="0.00" colliderFront="4543.67,516.04" colliderBack="4542.77,527.01" victimFront="4545.21,517.07" victimBack="4546.38,512.21"/>
+    <collision time="2276.50" type="side" lane=":cluster_13506574405_8460813248_cluster_13506574409_8401534579_24_0" pos="7.40" collider="hv2717" victim="hv3707" colliderType="hv_krauss" victimType="hv_krauss" colliderSpeed="5.53" victimSpeed="0.00" colliderFront="3157.65,1118.19" colliderBack="3162.11,1115.91" victimFront="3160.80,1116.70" victimBack="3162.90,1121.61"/>
+    <collision time="2371.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="46.64" collider="hv4233" victim="hv2774" colliderType="hv_idm" victimType="hv_acc" colliderSpeed="11.41" victimSpeed="0.00" colliderFront="1164.30,1281.31" colliderBack="1162.51,1285.98" victimFront="1164.17,1286.15" victimBack="1166.57,1281.77"/>
+    <collision time="2372.50" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="43.56" collider="hv3249" victim="hv2774" colliderType="hv_eidm" victimType="hv_acc" colliderSpeed="11.93" victimSpeed="0.00" colliderFront="1163.20,1284.18" colliderBack="1161.41,1288.85" victimFront="1164.17,1286.15" victimBack="1166.57,1281.77"/>
+    <collision time="2377.50" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="44.81" collider="hv4038" victim="hv2774" colliderType="hv_krauss" victimType="hv_acc" colliderSpeed="13.27" victimSpeed="0.00" colliderFront="1163.65,1283.02" colliderBack="1161.86,1287.69" victimFront="1164.17,1286.15" victimBack="1166.57,1281.77"/>
+    <collision time="2383.50" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="46.16" collider="hv3940" victim="hv2774" colliderType="hv_truck" victimType="hv_acc" colliderSpeed="12.44" victimSpeed="0.00" colliderFront="1164.13,1281.76" colliderBack="1160.91,1290.17" victimFront="1164.17,1286.15" victimBack="1166.57,1281.77"/>
+    <collision time="2387.00" type="junction" lane=":cluster_12987754270_12987754280_5166814282_9_1" pos="46.78" collider="hv3686" victim="hv2774" colliderType="hv_idm" victimType="hv_acc" colliderSpeed="10.47" victimSpeed="0.00" colliderFront="1164.35,1281.18" colliderBack="1162.56,1285.85" victimFront="1164.17,1286.15" victimBack="1166.57,1281.77"/>
+</collisions>

@@ -1,0 +1,122 @@
+[w1] ep  34 olympic_to_singil      stuck        432s  15.6 km/h shield 0.0%
+[w1] ep  35 gyeongin_to_mapo       arrived     1066s  17.7 km/h shield 0.0%
+[w1] ep  36 daebang_to_seogang     arrived      916s  15.9 km/h shield 0.0%
+[w2] ep  67 nodeul_to_dangsan      arrived     1316s  17.2 km/h shield 0.0%
+[w0] ep   0 gyeongin_to_mapo       arrived     1496s  18.5 km/h shield 0.0%
+[w1] ep  37 seogang_to_gyeongin    arrived      815s  20.1 km/h shield 0.0%
+[w2] ep  68 dangsan_to_noryangjin  arrived      662s  36.2 km/h shield 0.0%
+[w1] ep  38 mapo_to_singil         arrived     1012s  16.6 km/h shield 0.0%
+[w2] ep  69 olympic_to_singil      arrived      584s  30.5 km/h shield 0.0%
+[w0] ep   1 daebang_to_seogang     arrived      846s  17.2 km/h shield 0.0%
+[w2] ep  70 gyeongin_to_mapo       arrived      857s  25.4 km/h shield 0.0%
+[w1] ep  39 nodeul_to_dangsan      arrived     1570s  12.7 km/h shield 0.0%
+[w0]   충돌 상세: {'type': 'collision', 'lane': '-464839318#1_0', 'other': 'hv6288', 'ego_is_collider': True, 'ego_speed': 0.027313624508678913, 'other_speed': 0.0, 'road_name': '영중로', 'lane_change': 0}
+[w0] ep   2 seogang_to_gyeongin    collision    552s  15.1 km/h shield 0.0%
+[w1] ep  40 dangsan_to_noryangjin  arrived      554s  43.4 km/h shield 0.0%
+[w0] ep   3 mapo_to_singil         arrived      818s  20.7 km/h shield 0.0%
+[w1] ep  41 olympic_to_singil      arrived      581s  30.7 km/h shield 0.0%
+[w0]   충돌 상세: {'type': 'collision', 'lane': '-1413206558_1', 'other': 'hv3835', 'ego_is_collider': True, 'ego_speed': 1.4476731938193552, 'other_speed': 0.0, 'road_name': '국회대로', 'lane_change': 0}
+[w0] ep   4 nodeul_to_dangsan      collision    396s  36.0 km/h shield 0.0%
+[w2] ep  71 daebang_to_seogang     arrived      788s  21.3 km/h shield 0.0%
+[w1] ep  42 gyeongin_to_mapo       arrived      798s  23.6 km/h shield 0.0%
+[w0] ep   5 dangsan_to_noryangjin  arrived      600s  40.0 km/h shield 0.0%
+[w1] ep  43 daebang_to_seogang     arrived      475s  30.6 km/h shield 0.0%
+[w2] ep  72 seogang_to_gyeongin    arrived      881s  18.6 km/h shield 0.0%
+[w2] ep  73 mapo_to_singil         arrived      484s  34.7 km/h shield 0.0%
+[w1] ep  44 seogang_to_gyeongin    arrived      703s  24.1 km/h shield 0.0%
+[w2] ep  74 nodeul_to_dangsan      arrived     1286s  20.5 km/h shield 0.0%
+[w1] ep  45 mapo_to_singil         arrived      546s  30.8 km/h shield 0.0%
+[w0] ep   6 olympic_to_singil      arrived      996s  17.0 km/h shield 0.0%
+[w2] ep  75 dangsan_to_noryangjin  arrived      623s  38.5 km/h shield 0.0%
+[w2]   충돌 상세: {'type': 'collision', 'lane': '359930762#1_0', 'other': 'hv6014', 'ego_is_collider': True, 'ego_speed': 0.10639947652816772, 'other_speed': 0.0, 'road_name': '', 'lane_change': 0}
+[w2] ep  76 olympic_to_singil      collision     76s  33.5 km/h shield 0.0%
+[w2] ep  77 gyeongin_to_mapo       arrived      701s  31.1 km/h shield 0.0%
+[w0] ep   7 gyeongin_to_mapo       arrived     1110s  17.0 km/h shield 0.0%
+[w1] ep  46 nodeul_to_dangsan      arrived     1568s  12.6 km/h shield 0.0%
+[w2] ep  78 daebang_to_seogang     arrived      914s  15.9 km/h shield 0.0%
+[w1] ep  47 dangsan_to_noryangjin  arrived     1120s  17.9 km/h shield 0.0%
+[w0] ep   8 daebang_to_seogang     arrived      842s  19.9 km/h shield 0.0%
+[w1]   충돌 상세: {'type': 'collision', 'lane': '-1525955006#2_0', 'other': 'hv2995', 'ego_is_collider': True, 'ego_speed': 0.11146312952041626, 'other_speed': 0.0, 'road_name': '여의동로', 'lane_change': 0}
+[w1] ep  48 olympic_to_singil      collision    182s  37.8 km/h shield 0.0%
+[w2] ep  79 seogang_to_gyeongin    arrived      950s  18.0 km/h shield 0.0%
+[w0] ep   9 seogang_to_gyeongin    arrived      678s  24.9 km/h shield 0.0%
+[w1] ep  49 gyeongin_to_mapo       arrived     1436s  19.3 km/h shield 0.0%
+[w2] ep  80 mapo_to_singil         arrived      826s  20.5 km/h shield 0.0%
+[w0] ep  10 mapo_to_singil         arrived      636s  26.4 km/h shield 0.0%
+[w1] ep  50 daebang_to_seogang     arrived      792s  18.3 km/h shield 0.0%
+[w2] ep  81 nodeul_to_dangsan      arrived      999s  20.1 km/h shield 0.0%
+[w0] ep  11 nodeul_to_dangsan      arrived      732s  28.7 km/h shield 0.0%
+[w2] ep  82 dangsan_to_noryangjin  arrived      573s  41.9 km/h shield 0.0%
+[w0] ep  12 dangsan_to_noryangjin  arrived      602s  39.8 km/h shield 0.0%
+[w1] ep  51 seogang_to_gyeongin    arrived      950s  17.6 km/h shield 0.0%
+[w2]   충돌 상세: {'type': 'collision', 'lane': '-1525955006#2_0', 'other': 'hv6014', 'ego_is_collider': True, 'ego_speed': 0.07452913408633322, 'other_speed': 0.0, 'road_name': '여의동로', 'lane_change': 0}
+[w2] ep  83 olympic_to_singil      collision    323s  20.7 km/h shield 0.0%
+[w0] ep  13 olympic_to_singil      arrived      588s  27.7 km/h shield 0.0%
+[w1] ep  52 mapo_to_singil         arrived      598s  28.1 km/h shield 0.0%
+[w2] ep  84 gyeongin_to_mapo       arrived      795s  23.7 km/h shield 0.0%
+[w0]   충돌 상세: {'type': 'collision', 'lane': '453143057#1_1', 'other': 'hv6048', 'ego_is_collider': True, 'ego_speed': 0.17512247152626514, 'other_speed': 0.05084087254381209, 'road_name': '경인로', 'lane_change': 0}
+[w0] ep  14 gyeongin_to_mapo       collision    504s  22.4 km/h shield 0.0%
+[w2] ep  85 daebang_to_seogang     arrived      474s  30.6 km/h shield 0.0%
+[w1] ep  53 nodeul_to_dangsan      arrived     1582s  12.7 km/h shield 0.0%
+[w2] ep  86 seogang_to_gyeongin    arrived      628s  26.2 km/h shield 0.0%
+[w0] ep  15 daebang_to_seogang     arrived      920s  15.8 km/h shield 0.0%
+[w1] ep  54 dangsan_to_noryangjin  arrived      564s  42.6 km/h shield 0.0%
+[w2] ep  87 mapo_to_singil         arrived      712s  25.6 km/h shield 0.0%
+[w0] ep  16 seogang_to_gyeongin    arrived      671s  25.2 km/h shield 0.0%
+[w1] ep  55 olympic_to_singil      arrived      581s  28.0 km/h shield 0.0%
+[w1]   충돌 상세: {'type': 'collision', 'lane': '453143057#1_1', 'other': 'hv5571', 'ego_is_collider': True, 'ego_speed': 0.15310101583600044, 'other_speed': 0.020703981649508242, 'road_name': '경인로', 'lane_change': 0}
+[w1] ep  56 gyeongin_to_mapo       collision    509s  22.0 km/h shield 0.0%
+[w2] ep  88 nodeul_to_dangsan      arrived      878s  22.9 km/h shield 0.0%
+[w0] ep  17 mapo_to_singil         arrived      640s  26.3 km/h shield 0.0%
+[w1] ep  57 daebang_to_seogang     arrived      535s  31.8 km/h shield 0.0%
+[w2] ep  89 dangsan_to_noryangjin  arrived      533s  45.0 km/h shield 0.0%
+[w0] ep  18 nodeul_to_dangsan      arrived      976s  20.6 km/h shield 0.0%
+[w1] ep  58 seogang_to_gyeongin    arrived      616s  27.5 km/h shield 0.0%
+[w0] ep  19 dangsan_to_noryangjin  arrived      523s  45.9 km/h shield 0.0%
+[w2]   충돌 상세: {'type': 'junction', 'lane': ':cluster_13506574405_8460813248_cluster_13506574409_8401534579_3_3', 'other': 'hv6858', 'ego_is_collider': False, 'ego_speed': 5.4574001133441925, 'other_speed': 6.83652452829943, 'road_name': '(교차로)', 'lane_change': 0}
+[w2] ep  90 olympic_to_singil      collision    375s  18.3 km/h shield 0.0%
+[w1] ep  59 mapo_to_singil         arrived      604s  27.8 km/h shield 0.0%
+[w2]   충돌 상세: {'type': 'collision', 'lane': '453143057#1_1', 'other': 'hv5467', 'ego_is_collider': True, 'ego_speed': 0.026158039458096027, 'other_speed': 9.035048100169973e-05, 'road_name': '경인로', 'lane_change': 0}
+[w2] ep  91 gyeongin_to_mapo       collision    577s  19.9 km/h shield 0.0%
+[w0] ep  20 olympic_to_singil      arrived      597s  30.2 km/h shield 0.0%
+[w1]   충돌 상세: {'type': 'collision', 'lane': '-1413206558_1', 'other': 'hv3698', 'ego_is_collider': True, 'ego_speed': 0.06076655967626721, 'other_speed': 0.0, 'road_name': '국회대로', 'lane_change': 0}
+[w1] ep  60 nodeul_to_dangsan      collision    394s  36.2 km/h shield 0.0%
+[w2] ep  92 daebang_to_seogang     arrived     1029s  14.1 km/h shield 0.0%
+[w1] ep  61 dangsan_to_noryangjin  arrived      512s  46.9 km/h shield 0.0%
+[w0] ep  21 gyeongin_to_mapo       arrived      680s  32.0 km/h shield 0.0%
+[w2] ep  93 seogang_to_gyeongin    arrived     1008s  16.5 km/h shield 0.0%
+[w0] ep  22 daebang_to_seogang     arrived      680s  21.4 km/h shield 0.0%
+[w1] ep  62 olympic_to_singil      arrived      802s  22.5 km/h shield 0.0%
+[w2] ep  94 mapo_to_singil         arrived     1103s  15.2 km/h shield 0.0%
+[w0] ep  23 seogang_to_gyeongin    arrived     1464s  13.1 km/h shield 0.0%
+[w1] ep  63 gyeongin_to_mapo       arrived     1046s  18.1 km/h shield 0.0%
+[w2] ep  95 nodeul_to_dangsan      arrived     1044s  19.2 km/h shield 0.0%
+[w0] ep  24 mapo_to_singil         arrived      824s  25.7 km/h shield 0.0%
+[w1] ep  64 daebang_to_seogang     arrived     1028s  14.1 km/h shield 0.0%
+[w2] ep  96 dangsan_to_noryangjin  arrived      538s  44.6 km/h shield 0.0%
+[w0] ep  25 nodeul_to_dangsan      arrived      994s  22.8 km/h shield 0.0%
+[w1] ep  65 seogang_to_gyeongin    arrived      752s  22.5 km/h shield 0.0%
+[w2] ep  97 olympic_to_singil      arrived      882s  21.6 km/h shield 0.0%
+[w0] ep  26 dangsan_to_noryangjin  arrived      565s  42.5 km/h shield 0.0%
+[w1] ep  66 mapo_to_singil         arrived      529s  31.7 km/h shield 0.0%
+[w2] ep  98 gyeongin_to_mapo       arrived     1030s  22.1 km/h shield 0.0%
+[w0] ep  27 olympic_to_singil      arrived      782s  23.0 km/h shield 0.0%
+[w2] ep  99 daebang_to_seogang     arrived     1348s  10.9 km/h shield 0.0%
+[w0] ep  28 gyeongin_to_mapo       arrived      792s  23.8 km/h shield 0.0%
+[w0] ep  29 daebang_to_seogang     arrived      916s  15.8 km/h shield 0.0%
+[w0] ep  30 seogang_to_gyeongin    arrived     1094s  15.2 km/h shield 0.0%
+[w0] ep  31 mapo_to_singil         arrived      632s  28.8 km/h shield 0.0%
+[w0] ep  32 nodeul_to_dangsan      arrived     1032s  19.5 km/h shield 0.0%
+[w0] ep  33 dangsan_to_noryangjin  arrived      589s  40.7 km/h shield 0.0%
+
+─── ppo (shield off) · 100 에피소드 (640s) ───
+  충돌률 10.0% · 완주율 89.0% · 교착 1.0% · 시간초과 0.0%
+  평균 통행시간 836s · 평균속도 25.0 km/h · 안전필터 개입 0.00% · 차선변경 1.0회/ep
+    daebang_to_seogang     n= 15 충돌 0% 완주 100% 통행   834s
+    dangsan_to_noryangjin  n= 14 충돌 0% 완주 100% 통행   611s
+    gyeongin_to_mapo       n= 15 충돌 20% 완주 80% 통행   984s
+    mapo_to_singil         n= 14 충돌 0% 완주 100% 통행   712s
+    nodeul_to_dangsan      n= 14 충돌 14% 완주 86% 통행  1165s
+    olympic_to_singil      n= 14 충돌 29% 완주 64% 통행   710s
+    seogang_to_gyeongin    n= 14 충돌 7% 완주 93% 통행   862s
+  저장: results/eval_ppo_main_noshield_diag.json
