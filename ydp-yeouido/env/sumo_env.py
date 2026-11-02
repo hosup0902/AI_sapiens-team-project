@@ -184,7 +184,7 @@ class YdpCityEnv(gym.Env):
                "--no-warnings", "true", "--no-step-log", "true",
                "--seed", str(self.rng.randint(0, 99999))] + sumo_runtime_args()
         if self.gui:
-            cmd += ["--delay", str(self.gui_delay)]
+            cmd += ["--delay", str(self.gui_delay), "--quit-on-end"]   # close() 시 창이 닫혀야 TraCI가 종료됨
             if self.gui_autostart:
                 cmd += ["--start"]
         cwd = os.getcwd()
@@ -561,7 +561,7 @@ class YdpCityEnv(gym.Env):
             inside = foe_d <= 0.5                               # 상대 앞부분이 이미 상충 구역 안
             entering = foe_d < 6.0 and fv * 1.5 >= foe_d        # 1.5 s 안에 들어옴
             if inside or entering:
-                out.append((max(ego_d, 0.0), fid))
+                out.append((max(ego_d, 0.0), fid, 0.0))
         return out
 
     def _path_polyline(self, horizon=30.0):
@@ -655,22 +655,23 @@ class YdpCityEnv(gym.Env):
             road = T.vehicle.getRoadID(vid)
             if road not in path_edges and not any(road.startswith(j) for j in junctions):
                 continue
-            # 상대 앞부분이 내 앞 범퍼보다 뒤에 있으면(옆에서 합류 대기 중 등) 내게 양보할 차량 → 제외
-            eh = math.radians(ego_ang)
-            if (fx - ex) * math.sin(eh) + (fy - ey) * math.cos(eh) < 0.5:
-                continue
             ang = T.vehicle.getAngle(vid)
             dang = abs((ang - ego_ang + 180.0) % 360.0 - 180.0)
             v = T.vehicle.getSpeed(vid)
-            if dang < 25.0 and v > 1.0:
-                continue
             L = T.vehicle.getLength(vid)
             th = math.radians(ang)                          # SUMO 각도: 북쪽 0°, 시계방향
             bx, by = fx - L * math.sin(th), fy - L * math.cos(th)
+            # 차체 앞·뒤 끝이 모두 내 앞 범퍼보다 뒤 → 옆/뒤에서 합류 대기 중인 차량(내게 양보) → 제외
+            eh = math.radians(ego_ang)
+            sx, sy = math.sin(eh), math.cos(eh)
+            if max((fx - ex) * sx + (fy - ey) * sy, (bx - ex) * sx + (by - ey) * sy) < 0.5:
+                continue
+            # 같은 방향(합류 후 앞차가 될 차량)은 그 속도로, 교차 방향은 정지 장애물로
+            v_along = v * math.cos(math.radians(dang)) if dang < 45.0 else 0.0
             half = 0.5 * (T.vehicle.getWidth(vid) + 1.8) + 0.3
             for px, py, s in path:
                 if _seg_point_dist(px, py, fx, fy, bx, by) < half:
-                    out.append((s, vid))
+                    out.append((s, vid, max(v_along, 0.0)))
                     break
         return out
 
@@ -693,10 +694,10 @@ class YdpCityEnv(gym.Env):
             lid, gap = res
             best = (gap, T.vehicle.getSpeed(lid), max(T.vehicle.getDecel(lid), 1.0))
         blockers = self._junction_blockers(min(horizon, 80.0)) + self._geometric_blockers(min(horizon, 30.0))
-        for d, _fid in blockers:
+        for d, _fid, v_along in blockers:
             gap = d - 1.0
             if best is None or gap < best[0]:
-                best = (gap, 0.0, 9.0)                 # 상충점에 정지한 장애물로 취급
+                best = (gap, v_along, 9.0 if v_along <= 0 else 4.5)   # 교차 차량은 상충점의 정지 장애물
         return best
 
     def _shield_speed(self, v_des):

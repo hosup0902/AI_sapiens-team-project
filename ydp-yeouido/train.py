@@ -139,6 +139,8 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args()
 
+    # 환경(SUMO) 스텝이 병목이고 신경망은 작다 → 스레드를 줄여 평가·수집 프로세스와의 CPU 경합(OpenMP 대기)을 막는다
+    torch.set_num_threads(2)
     from algorithms.ppo import PPO
     from utils.buffer import RolloutBuffer
     from utils.logger import RunLogger

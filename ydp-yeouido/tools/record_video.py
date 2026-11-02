@@ -55,7 +55,7 @@ def main():
     ap.add_argument("--every", type=int, default=2, help="N 스텝마다 1프레임 (0.5 s × N)")
     ap.add_argument("--fps", type=int, default=20)
     ap.add_argument("--size", default="1280x720")
-    ap.add_argument("--zoom", type=float, default=1800)
+    ap.add_argument("--zoom", type=float, default=3500)
     ap.add_argument("--seed", type=int, default=3)
     ap.add_argument("--snapshot-index", type=int, default=4)
     ap.add_argument("--max-steps", type=int, default=None)
