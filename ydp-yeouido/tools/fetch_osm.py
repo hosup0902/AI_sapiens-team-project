@@ -39,6 +39,8 @@ def build_query(bbox):
               "natural", "waterway", "amenity", "bridge")]
     parts += [f'relation["{k}"]{b};' for k in
               ("building", "landuse", "leisure", "natural", "waterway")]
+    # 회전 제한(좌회전 금지·직진 전용 등) — netconvert가 연결(connection)에서 제외한다
+    parts += [f'relation["type"="restriction"]{b};']
     return f"[out:xml][timeout:240];({''.join(parts)});(._;>;);out body;"
 
 

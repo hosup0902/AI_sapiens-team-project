@@ -30,6 +30,12 @@ if "SUMO_HOME" not in os.environ:
         if os.path.isdir(cand):
             os.environ["SUMO_HOME"] = cand
             break
+    else:
+        try:   # pip install eclipse-sumo
+            import sumo as _sumo_pkg
+            os.environ["SUMO_HOME"] = _sumo_pkg.SUMO_HOME
+        except ImportError:
+            pass
 sys.path.append(os.path.join(os.environ.get("SUMO_HOME", ""), "tools"))
 import sumolib  # noqa: E402
 from sumolib import checkBinary  # noqa: E402
@@ -166,6 +172,15 @@ def build_net():
     nodes = {n.get("id"): n for n in root.iter("node")}
     # (a) 교차점 강제 병합 — 영등포 로터리처럼 OSM에서 쪼개진 교차로
     joined_tls = set()
+    #   입체 교차 보호: 평면(layer 0) 도로가 하나도 지나지 않는 노드(고가·지하차도 위의
+    #   합류점 등)는 반경 안에 있어도 병합하지 않는다. (여의교 북단: 여의대방로 고가의
+    #   램프 합류점이 평면 교차로에 섞여 고가 차량이 신호를 받던 오류)
+    from env.osm_prep import OSM, way_layer
+    node_layers = {}
+    for refs, tags, _ in OSM(osm).ways.values():
+        if "highway" in tags:
+            for r in refs:
+                node_layers.setdefault(r, set()).add(way_layer(tags))
     for cl in NETWORK.get("join_clusters", []):
         cx, cy = stage1.convertLonLat2XY(*cl["lonlat"])
         members = []
@@ -173,6 +188,9 @@ def build_net():
             x, y = float(n.get("x")), float(n.get("y"))
             if math.hypot(x - cx, y - cy) <= cl["radius"] and \
                     len(stage1.getNode(nid).getIncoming()) + len(stage1.getNode(nid).getOutgoing()) > 2:
+                if 0 not in node_layers.get(nid, {0}):
+                    print(f"    {cl['name']}: 입체 노드 {nid} (층 {sorted(node_layers[nid])}) 병합 제외")
+                    continue
                 members.append(nid)
         if len(members) >= 2:
             ET.SubElement(root, "join", nodes=" ".join(members))

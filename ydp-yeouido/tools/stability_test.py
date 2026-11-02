@@ -19,13 +19,13 @@ from env.road_builder import P, NAME, OUT  # noqa: E402  (SUMO_HOME 설정)
 import libsumo as traci  # noqa: E402
 
 
-def run(seed, end, step, warmup):
+def run(seed, end, step, warmup, extra=()):
     cwd = os.getcwd()
     os.chdir(OUT)   # 한글 경로 회피: 상대경로로 실행
     try:
         traci.start(["sumo", "-c", f"{NAME}.sumocfg", "--seed", str(seed),
                      "--step-length", str(step), "--no-warnings", "true",
-                     "--duration-log.disable", "true"])
+                     "--duration-log.disable", "true"] + list(extra))
     finally:
         os.chdir(cwd)
     tele = collections.Counter()
@@ -89,11 +89,12 @@ if __name__ == "__main__":
     ap.add_argument("--warmup", type=float, default=0)
     ap.add_argument("--seeds", type=int, nargs="+", default=[42])
     ap.add_argument("--hotspots", action="store_true")
+    ap.add_argument("--sumo-args", default="", help='SUMO에 추가로 넘길 인자 (예: "--additional-files ydp.vtypes.xml")')
     ap.add_argument("--save", default=os.path.join(BASE, "results", "stability.json"))
     a = ap.parse_args()
     res = []
     for s in a.seeds:
-        r = run(s, a.end, a.step, a.warmup)
+        r = run(s, a.end, a.step, a.warmup, a.sumo_args.split())
         res.append(r)
         print(f"seed {s}: 투입 {r['departed']} · 도착 {r['arrived']} · 최대 동시 {r['running_max']}대 · "
               f"텔레포트 {r['teleports']} · 충돌 {r['collisions']} · 120s+ 정지 {r['stopped_over_120s']} · "

@@ -44,6 +44,20 @@ class OSM:
             self.rels.append((r.get("id"), mem, tags))
 
 
+def way_layer(tags):
+    """OSM way의 층: layer 태그 우선, 없으면 교량 +1 / 지하차도 -1 / 평면 0."""
+    if "layer" in tags:
+        try:
+            return int(float(tags["layer"].split(";")[0]))
+        except ValueError:
+            pass
+    if tags.get("tunnel") in ("yes", "building_passage") or tags.get("covered") == "yes":
+        return -1
+    if tags.get("bridge", "no") != "no":
+        return 1
+    return 0
+
+
 # ──────────────────────────────────────────────────────────────
 # 1) 도로 클리핑
 # ──────────────────────────────────────────────────────────────
@@ -96,6 +110,10 @@ def clip_roads(osm_path, out_path, bbox_snwe, fixes=None):
     for wid, (refs, tags, el) in osm.ways.items():
         if wid in fixes:                 # OSM 태그 오류 수동 보정
             tags = {**tags, **fixes[wid]}
+        # 도로명 단위 보정 ("name:국회대로": {...}) — lanes 태그가 없는 way에만 적용
+        nfix = fixes.get(f"name:{tags.get('name', '')}")
+        if nfix and not ({"lanes", "lanes:forward", "lanes:backward"} & set(tags)):
+            tags = {**tags, **nfix}
         if "highway" not in tags or any(r not in osm.nodes for r in refs):
             continue
         pts = [osm.nodes[r] for r in refs]
