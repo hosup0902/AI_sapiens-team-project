@@ -1,0 +1,183 @@
+{
+ "main": {
+  "name": "PPO 최종 (안전 필터 ON)",
+  "episodes": 100,
+  "collision_rate": 0.03,
+  "success_rate": 0.97,
+  "stuck_rate": 0.0,
+  "timeout_rate": 0.0,
+  "mean_travel_time_s": 853.4845360824743,
+  "mean_speed_kmh": 24.136580923864212,
+  "min_gap_m_median": 1.2579320284721138,
+  "shield_rate": 0.0016547720936356041,
+  "lane_changes_per_ep": 1.11,
+  "mean_return": 73.07738153159576
+ },
+ "per_route": {
+  "daebang_to_seogang": {
+   "episodes": 15,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 742.1666666666666,
+   "mean_speed_kmh": 21.479386921310628,
+   "min_gap_m_median": 1.5971057664515875,
+   "shield_rate": 0.00014981183248678013,
+   "lane_changes_per_ep": 0.9333333333333333,
+   "mean_return": 60.01858621688116
+  },
+  "dangsan_to_noryangjin": {
+   "episodes": 14,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 720.1428571428571,
+   "mean_speed_kmh": 35.26628135208109,
+   "min_gap_m_median": 0.7841885121073613,
+   "shield_rate": 0.0003996058064175802,
+   "lane_changes_per_ep": 0.8571428571428571,
+   "mean_return": 94.48285724598615
+  },
+  "gyeongin_to_mapo": {
+   "episodes": 15,
+   "collision_rate": 0.06666666666666667,
+   "success_rate": 0.9333333333333333,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 966.1071428571429,
+   "mean_speed_kmh": 22.9779079518237,
+   "min_gap_m_median": 1.6691201100120168,
+   "shield_rate": 0.0009624727662120167,
+   "lane_changes_per_ep": 1.6666666666666667,
+   "mean_return": 77.19548058260418
+  },
+  "mapo_to_singil": {
+   "episodes": 14,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 849.25,
+   "mean_speed_kmh": 22.743498746169028,
+   "min_gap_m_median": 1.0351283039284658,
+   "shield_rate": 0.0007060138405405898,
+   "lane_changes_per_ep": 1.1428571428571428,
+   "mean_return": 77.37287260136277
+  },
+  "nodeul_to_dangsan": {
+   "episodes": 14,
+   "collision_rate": 0.07142857142857142,
+   "success_rate": 0.9285714285714286,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 1162.4615384615386,
+   "mean_speed_kmh": 19.090641974240476,
+   "min_gap_m_median": 0.8506279616385335,
+   "shield_rate": 0.004060384877329968,
+   "lane_changes_per_ep": 1.0,
+   "mean_return": 74.56348673905957
+  },
+  "olympic_to_singil": {
+   "episodes": 14,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 708.9285714285714,
+   "mean_speed_kmh": 26.961532783854928,
+   "min_gap_m_median": 1.8474207820716133,
+   "shield_rate": 0.0003871336021231872,
+   "lane_changes_per_ep": 0.5714285714285714,
+   "mean_return": 71.77539499053962
+  },
+  "seogang_to_gyeongin": {
+   "episodes": 14,
+   "collision_rate": 0.07142857142857142,
+   "success_rate": 0.9285714285714286,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 855.5,
+   "mean_speed_kmh": 20.709378664326326,
+   "min_gap_m_median": 0.9471112598954985,
+   "shield_rate": 0.005074929043808565,
+   "lane_changes_per_ep": 1.5714285714285714,
+   "mean_return": 56.771613506430306
+  }
+ },
+ "policies": [
+  {
+   "name": "PPO 최종 (안전 필터 ON)",
+   "episodes": 100,
+   "collision_rate": 0.03,
+   "success_rate": 0.97,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 853.4845360824743,
+   "mean_speed_kmh": 24.136580923864212,
+   "min_gap_m_median": 1.2579320284721138,
+   "shield_rate": 0.0016547720936356041,
+   "lane_changes_per_ep": 1.11,
+   "mean_return": 73.07738153159576
+  },
+  {
+   "name": "PPO 최종 (필터 OFF)",
+   "episodes": 100,
+   "collision_rate": 0.03,
+   "success_rate": 0.96,
+   "stuck_rate": 0.01,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 864.765625,
+   "mean_speed_kmh": 24.330619329687497,
+   "min_gap_m_median": 0.7946140107355957,
+   "shield_rate": 0.0,
+   "lane_changes_per_ep": 0.97,
+   "mean_return": 71.48764715278317
+  },
+  {
+   "name": "BC (PPO 데이터 모방)",
+   "episodes": 100,
+   "collision_rate": 0.0,
+   "success_rate": 0.99,
+   "stuck_rate": 0.01,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 917.1616161616162,
+   "mean_speed_kmh": 22.757009196351905,
+   "min_gap_m_median": 1.0,
+   "shield_rate": 0.0010105596895772068,
+   "lane_changes_per_ep": 0.45,
+   "mean_return": 74.18478341436362
+  },
+  {
+   "name": "규칙 전문가 (IDM)",
+   "episodes": 100,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 863.87,
+   "mean_speed_kmh": 23.926432497158295,
+   "min_gap_m_median": 2.1888738899384848,
+   "shield_rate": 0.0015121986759905177,
+   "lane_changes_per_ep": 1.09,
+   "mean_return": 75.9911990620307
+  }
+ ],
+ "videos": [
+  {
+   "src": "video/gyeongin_to_mapo_ppo.mp4",
+   "caption": "gyeongin_to_mapo_ppo — 빨간 차가 AV. sumo-gui 실제 시뮬레이션 화면 (2 step/프레임)"
+  },
+  {
+   "src": "video/seogang_to_gyeongin_ppo.mp4",
+   "caption": "seogang_to_gyeongin_ppo — 빨간 차가 AV. sumo-gui 실제 시뮬레이션 화면 (2 step/프레임)"
+  }
+ ],
+ "links": {
+  "hf": null,
+  "slides": null
+ },
+ "train_html": "<p>BC 초기화 → PPO(필터 ON) → 필터 OFF 미세조정 → 오토홀드 미세조정. 전문가 데이터는 초기화·기준선에만 사용.</p><figure><img src=\"img/training_curve.png\" alt=\"PPO 학습 곡선\"><figcaption>학습 리턴, 평가 리턴, 평가 속도·충돌률 (세 학습 단계)</figcaption></figure>",
+ "data_html": "<p>PPO 전체 컬럼 123,356 + PPO NPZ 710,764 + 전문가 237,118 = 약 107만 transition. 10<sup>7</sup> 목표 명령은 README 참고.</p>"
+}

@@ -1,0 +1,13 @@
+{
+ "data": "data/ydp_ppo_final.npz",
+ "epochs": 40,
+ "batch_size": 256,
+ "lr": 0.0003,
+ "val_fraction": 0.2,
+ "seed": 0,
+ "device": "cpu",
+ "state_dim": 44,
+ "action_dim": 2,
+ "train_samples": 98592,
+ "val_samples": 24764
+}

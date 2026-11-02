@@ -22,8 +22,16 @@ SUMO로 옮긴 환경에서, 자율주행 차량(AV, ego)이 일반 차량(HV) �
 7개 실제 OD 경로(교량·로터리·신호교차로 6~33곳)를 출발지에서 목적지까지 주행한 기록이다.
 
 - 코드: https://github.com/hosup0902/AI_sapiens-team-project (`ydp-yeouido/`)
-- 환경: SUMO 1.28, 0.5 s step, 신호 107곳, HV 6,500대/h 이상 (Krauss·IDM·EIDM·ACC·버스·트럭 혼합)
+- 환경: SUMO 1.28, 0.5 s step, 신호 107곳, HV 7,200대/h (Krauss·IDM·EIDM·ACC·버스·트럭 혼합)
 - 정책: 규칙 기반 전문가(IDM) / BC / PPO (수업 제공 알고리즘)
+
+## 규모 (2026-11-02 기준)
+
+| 파일 | 정책 | 에피소드 | transitions |
+|---|---|---:|---:|
+| `ydp_ppo_final.jsonl.gz` / `.npz` | 최종 PPO (안전 필터 ON) | 70 | 123,356 |
+| `ydp_ppo_bulk_01.npz` | 최종 PPO | 420 | 710,764 |
+| `expert_train.jsonl.gz` / `.npz` | 규칙 전문가 + 가감속 잡음 σ=0.1 (PPO 초기화용) | 140 | 237,118 |
 
 ## 파일
 
