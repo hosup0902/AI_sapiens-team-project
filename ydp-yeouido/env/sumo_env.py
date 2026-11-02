@@ -93,7 +93,8 @@ class YdpCityEnv(gym.Env):
     metadata = {"render_modes": ["human"]}
 
     def __init__(self, mdp_sim, mdp_obs, action, reward, ego=EGO, routes=None,
-                 gui=False, gui_autostart=True, seed=None, route_mode="random"):
+                 gui=False, gui_autostart=True, seed=None, route_mode="random", routes_file=None,
+                 fixed_route=False):
         """
         Args:
             routes: 사용할 AV 과제 id 목록 (None이면 av_routes.json 전체)
@@ -105,9 +106,12 @@ class YdpCityEnv(gym.Env):
         self.rng = random.Random(seed)
         self.np_rng = np.random.default_rng(seed)
 
-        with open(P("av_routes.json"), encoding="utf-8") as f:
+        # routes_file: 시연용 투어 경로(env/sumo/av_tour.json) 등 다른 경로 파일 (기본: 학습·평가용 7개 과제)
+        with open(routes_file or P("av_routes.json"), encoding="utf-8") as f:
             all_routes = json.load(f)
         self.route_ids = list(routes or all_routes.keys())
+        # fixed_route=True: 재경로 장치 없는 AV 타입 → 지정 경로를 그대로 주행 (시연 투어용)
+        self.ego_type = "ego_type_fixed" if fixed_route else "ego_type"
         self.routes = {k: all_routes[k] for k in self.route_ids}
         self.route_mode = route_mode
         self._route_cursor = 0
@@ -229,7 +233,11 @@ class YdpCityEnv(gym.Env):
             rname = f"ego_route_{self.route_id}"
             if rname not in T.route.getIDList():
                 T.route.add(rname, edges)
-            T.vehicle.add(self.ego_id, rname, typeID="ego_type",
+            if self.ego_type != "ego_type" and self.ego_type not in T.vehicletype.getIDList():
+                # 스냅샷 로드가 차량 타입 목록을 스냅샷 시점 것으로 되돌리므로 여기서 다시 만든다
+                T.vehicletype.copy("ego_type", self.ego_type)
+                T.vehicletype.setParameter(self.ego_type, "has.rerouting.device", "false")
+            T.vehicle.add(self.ego_id, rname, typeID=self.ego_type,
                           departLane="best", departSpeed="max", departPos="base")
             for _ in range(int(60 / self.step_length)):      # 입구가 막혀 있으면 최대 60 s 대기
                 T.simulationStep()
@@ -244,6 +252,11 @@ class YdpCityEnv(gym.Env):
         else:
             raise RuntimeError("ego 투입 실패: 출발 엣지가 계속 막혀 있습니다.")
 
+        if self.ego_type != "ego_type":
+            try:   # 재경로 장치가 붙었더라도 주기를 0으로 → 지정 경로 유지
+                T.vehicle.setParameter(self.ego_id, "device.rerouting.period", "0")
+            except Exception:
+                pass
         T.vehicle.setSpeedMode(self.ego_id, self.speed_mode)
         T.vehicle.setLaneChangeMode(self.ego_id, self.lc_mode)
         if self.gui:

@@ -127,6 +127,18 @@ PPO 최종의 충돌 3건 중 2건은 일반 차량이 교차로에서 AV를 들
 
 주행 영상(sumo-gui 실제 화면): `assets/video/gyeongin_to_mapo_ppo.mp4` (59 s, 실제 29분), `assets/video/seogang_to_gyeongin_ppo.mp4` (33 s)
 
+**시연 투어 영상** `assets/video/yeouido_tour_ppo.mp4`: 영역 서쪽 끝 경인로에서 출발 → 영등포역 → 영등포 로터리(오거리) →
+서울교 → 여의도 순환도로(여의서로·여의동로) 한 바퀴 (8.3 km, 신호 20곳, 최종 PPO). 경로는 `tools/make_tour_route.py`
+→ `env/sumo/av_tour.json`, 녹화는
+`python tools/record_video.py --model results/final/model.pt --routes-file env/sumo/av_tour.json --route yeouido_tour --fixed-route --episode-steps 7200 --snapshot-index 3 --seed 21 --every 3`.
+같은 경로를 화면 없이 4번 주행: 3번 완주(20~31분), 1번은 여의교 북단에서 일반 차량이 AV를 추돌.
+
+![tour](assets/figures/yeouido_tour.png)
+
+> 참고: 평가·데이터 수집에서 AV(`ego_type`)도 HV와 같이 60 s 동적 재경로(내비게이션)가 적용된다. 목적지는 7개 과제 그대로지만
+> 실제 주행 경로는 정체에 따라 `av_routes.json`의 설계 경로와 달라질 수 있다. 지정 경로를 그대로 달려야 하는 시연에는
+> 재경로가 없는 `ego_type_fixed`(`YdpCityEnv(fixed_route=True)`, `--fixed-route`)를 쓴다.
+
 - 충돌률은 평가 기준 정의(충돌로 끝난 에피소드 비율)로, **AV가 일반 차량에 받힌 경우도 포함**한다.
 - 안전 필터(앞 장애물이 급정거해도 멈출 수 있는 속도로 제한)는 개입률 0.17 %이며, 필터를 꺼도 충돌률 3 %로 기준(≤5 %)을 만족한다.
 

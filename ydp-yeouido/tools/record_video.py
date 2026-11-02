@@ -60,6 +60,10 @@ def main():
     ap.add_argument("--snapshot-index", type=int, default=4)
     ap.add_argument("--max-steps", type=int, default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--routes-file", default=None, help="다른 경로 파일 (예: env/sumo/av_tour.json)")
+    ap.add_argument("--episode-steps", type=int, default=None, help="에피소드 최대 스텝 (긴 투어 경로용)")
+    ap.add_argument("--title", default=None, help="영상 상단 과제 이름 표시")
+    ap.add_argument("--fixed-route", action="store_true", help="AV 동적 재경로 끄기 (지정 경로 그대로 주행)")
     a = ap.parse_args()
     if a.policy is None:
         from collect_pomdp_data import detect_algorithm
@@ -70,8 +74,10 @@ def main():
     from train import REWARD
     from evaluate import load_policy
     sim = {**SIMULATION, "gui_zoom": a.zoom, "gui_delay": 0}
+    if a.episode_steps:
+        sim["max_steps"] = a.episode_steps
     env = YdpCityEnv(sim, OBSERVATION, ACTION, REWARD, gui=True, gui_autostart=True, seed=a.seed,
-                     routes=[a.route])
+                     routes=[a.route], routes_file=a.routes_file, fixed_route=a.fixed_route)
     pol = load_policy(a, env)
     W, H = (int(x) for x in a.size.split("x"))
     tmp = tempfile.mkdtemp(prefix="avvid_")
@@ -95,7 +101,7 @@ def main():
                 sig = "-" if not tls or tls[0] > 150 else \
                     f"{tls[0]:.0f} m {'초록' if tls[1] > 0.5 else ('황색' if tls[1] > -0.5 else '적색')}"
                 pending = (fpath, [
-                    (f"AV 과제: {a.route}  ({a.policy.upper()})", (255, 255, 255)),
+                    (f"AV 과제: {a.title or a.route}  ({a.policy.upper()})", (255, 255, 255)),
                     (f"도로: {st.get('ego_road_name', '')}", (255, 255, 255)),
                     (f"속도 {3.6 * st.get('ego_speed', 0):5.1f} km/h / 제한 {3.6 * st.get('speed_limit', 0):.0f}",
                      (120, 230, 255)),

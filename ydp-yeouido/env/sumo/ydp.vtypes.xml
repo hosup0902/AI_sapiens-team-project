@@ -1,5 +1,6 @@
 <additional>
     <vType id="ego_type" vClass="passenger" accel="3.0" decel="6.0" emergencyDecel="9" maxSpeed="22.22" length="4.6" color="255,0,0" carFollowModel="Krauss" sigma="0" guiShape="passenger/sedan"/>
+    <vType id="ego_type_fixed" vClass="passenger" accel="3.0" decel="6.0" emergencyDecel="9" maxSpeed="22.22" length="4.6" color="255,0,0" carFollowModel="Krauss" sigma="0" guiShape="passenger/sedan"><param key="has.rerouting.device" value="false"/></vType>
     <vTypeDistribution id="hv_mix">
         <vType id="hv_krauss" probability="0.3200" vClass="passenger" carFollowModel="Krauss" accel="2.4" decel="4.5" emergencyDecel="9" tau="1.0" minGap="2.5" speedFactor="normc(1.0,0.12,0.6,1.4)" color="255,220,0" guiShape="passenger" lcStrategic="1.0" sigma="0.4" lcCooperative="1.0" lcSpeedGain="1.0" lcKeepRight="0.5" lcAssertive="1.2" jmDriveAfterYellowTime="0.5" jmStoplineGap="1.0"/>
         <vType id="hv_idm" probability="0.2800" vClass="passenger" carFollowModel="IDM" accel="2.0" decel="3.8" emergencyDecel="9" tau="1.2" minGap="2.0" speedFactor="normc(0.98,0.1,0.6,1.4)" color="0,200,230" guiShape="passenger" lcStrategic="1.0" lcCooperative="1.0" lcSpeedGain="1.0" lcKeepRight="0.5" lcAssertive="1.2" jmDriveAfterYellowTime="0.5" jmStoplineGap="1.0"/>

@@ -331,6 +331,12 @@ def write_vtypes():
              f'    <vType id="ego_type" vClass="passenger" accel="{EGO["accel"]}" decel="{EGO["decel"]}" '
              f'emergencyDecel="9" maxSpeed="{EGO["max_speed"]}" length="{EGO["length"]}" '
              f'color="{EGO["color"]}" carFollowModel="Krauss" sigma="0" guiShape="passenger/sedan"/>',
+             # 경로 고정 AV: 동적 재경로 장치를 달지 않아 지정한 경로(예: 여의도 한 바퀴 투어)를 그대로 따른다.
+             #   기본 ego_type 은 HV와 같이 60 s 재경로(내비게이션)가 적용되어 목적지까지의 빠른 길로 바뀔 수 있다.
+             f'    <vType id="ego_type_fixed" vClass="passenger" accel="{EGO["accel"]}" decel="{EGO["decel"]}" '
+             f'emergencyDecel="9" maxSpeed="{EGO["max_speed"]}" length="{EGO["length"]}" '
+             f'color="{EGO["color"]}" carFollowModel="Krauss" sigma="0" guiShape="passenger/sedan">'
+             '<param key="has.rerouting.device" value="false"/></vType>',
              '    <vTypeDistribution id="hv_mix">']
     for name, c in ctrl.items():
         vclass = c.get("vClass", "passenger")

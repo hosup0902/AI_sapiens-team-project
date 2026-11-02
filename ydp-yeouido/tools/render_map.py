@@ -39,6 +39,7 @@ def main():
     ap.add_argument("--tls", action="store_true")
     ap.add_argument("--labels", action="store_true", help="주요 도로 이름 표시")
     ap.add_argument("--routes", action="store_true", help="AV 과제 경로 표시")
+    ap.add_argument("--routes-file", default=None, help="다른 경로 파일 (예: env/sumo/av_tour.json)")
     ap.add_argument("--dpi", type=int, default=220)
     a = ap.parse_args()
 
@@ -110,9 +111,9 @@ def main():
                 ax.scatter([sum(xs) / len(xs)], [sum(ys) / len(ys)], s=30 if not a.lonlat else 90,
                            c="#e53935", edgecolors="white", linewidths=0.6, zorder=6)
 
-    if a.routes:
+    if a.routes or a.routes_file:
         import json
-        rf = P("av_routes.json")
+        rf = a.routes_file or P("av_routes.json")
         palette = ["#e53935", "#1e88e5", "#43a047", "#fb8c00", "#8e24aa", "#00897b", "#6d4c41", "#d81b60"]
         for i, (rid, r) in enumerate(json.load(open(rf, encoding="utf-8")).items()):
             pts = []
