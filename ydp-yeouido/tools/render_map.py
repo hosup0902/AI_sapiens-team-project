@@ -22,8 +22,12 @@ import sumolib  # noqa: E402
 import logging
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 from matplotlib import font_manager  # noqa: E402
+try:
+    import koreanize_matplotlib  # noqa: F401,E402  (나눔고딕 등록 — 한글 도로명 라벨)
+except ImportError:
+    pass
 _avail = {f.name for f in font_manager.fontManager.ttflist}
-plt.rcParams["font.family"] = [f for f in ("Malgun Gothic", "AppleGothic", "NanumGothic") if f in _avail] + ["DejaVu Sans"]
+plt.rcParams["font.family"] = [f for f in ("NanumGothic", "Malgun Gothic", "AppleGothic") if f in _avail] + ["DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
 

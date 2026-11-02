@@ -7,3 +7,11 @@ numpy
 matplotlib
 shapely>=2.0
 pyproj>=3.6
+# 학습 / 평가 / 데이터
+gymnasium
+torch
+tensorboard
+# 시각화 (한글 글꼴 포함) / 영상 / 데이터 업로드
+koreanize-matplotlib
+pillow
+huggingface_hub

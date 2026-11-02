@@ -126,6 +126,7 @@ def build_net():
         "--tls.cycle.time", str(NETWORK["tls_cycle"]),
         "--tls.yellow.time", str(NETWORK["tls_yellow"]),
         "--tls.left-green.time", str(NETWORK["tls_left_green"]),
+        "--tls.minor-left.max-speed", str(NETWORK.get("tls_minor_left_max_speed", 19.44)),
         "--tls.default-type", "static",
         # 국내 간선 교차로의 일반적인 운영: 접근로별 동시신호(직진+좌회전 함께) → 비보호 좌회전 상충 제거
         "--tls.layout", NETWORK.get("tls_layout", "incoming"),
@@ -218,6 +219,17 @@ def build_net():
             n.set("tlLayout", "opposites")
             n_minor += 1
     print(f"  신호 현시: 간선교차 {n_major}곳(방향별 동시신호) · 간선-이면/횡단보도 {n_minor}곳(양방향 동시)")
+    # (b2) 신호 태그가 빠진 간선 교차로를 신호교차로로 지정 (NETWORK["force_tls"])
+    for ft in NETWORK.get("force_tls", []):
+        fx, fy = stage1.convertLonLat2XY(*ft["lonlat"])
+        cand = [(math.hypot(float(n.get("x")) - fx, float(n.get("y")) - fy), nid)
+                for nid, n in nodes.items()]
+        d, nid = min(cand)
+        if d <= ft.get("radius", 30) and not nodes[nid].get("type", "").startswith("traffic_light"):
+            nodes[nid].set("type", "traffic_light")
+            nodes[nid].set("tlLayout", "incoming")
+            nodes[nid].attrib.pop("tl", None)
+            print(f"  신호 지정: {ft['name']} ({nid})")
     # (c) 적색 우회전
     if NETWORK.get("right_on_red", True):
         n = 0
@@ -245,6 +257,12 @@ def build_net():
             cmd2 += [f"-{key}", ",".join(lst)]
     cmd2 += ["-o", P(f"{NAME}.net.xml")] + [c for c in common if c != typemap and c != "--type-files"]
     _run(cmd2, "netconvert_stage2")
+    if NETWORK.get("minor_left_ban_speed"):
+        banned = _ban_fast_permissive_left(P(f"{NAME}.net.xml"), f"{plain}.con.xml",
+                                           NETWORK["minor_left_ban_speed"])
+        print(f"  고속 다차로 횡단 비보호 좌회전 금지: {len(banned)}곳")
+        if banned:
+            _run(cmd2, "netconvert_stage2")
     os.remove(P(f"{NAME}.stage1.net.xml"))
     net = sumolib.net.readNet(P(f"{NAME}.net.xml"), withInternal=False)
     tls = len(net.getTrafficLights())
@@ -252,6 +270,41 @@ def build_net():
     print(f"  도로망: 엣지 {len(net.getEdges())} · 교차로 {len(net.getNodes())} · "
           f"신호 {tls} · 차로 총연장 {length:.1f} km")
     return net
+
+
+def _ban_fast_permissive_left(net_path, con_path, ban_v):
+    """(d) 고속·다차로를 가로지르는 비보호 좌회전 제거.
+
+    도로교통법상 신호교차로의 좌회전은 좌회전 신호(보호) 또는 '비보호 좌회전' 표지가 있는 곳에서만
+    가능하다. OSM에는 표지 정보가 없으므로, 녹색 화살표('G')가 한 번도 없이 비보호('g')로만
+    열리는 좌회전 중 반대편이 고속(≥ ban_v)·다차로(≥3)인 것은 금지로 본다.
+    (예: 노들로 70 km/h 3차로를 가로지르는 비보호 좌회전 → 좌회전 대기차-직진차 충돌 다발)
+    """
+    netp = sumolib.net.readNet(net_path, withInternal=False, withPrograms=True)
+    banned = set()
+    for tl in netp.getTrafficLights():
+        progs = list(tl.getPrograms().values())
+        if not progs:
+            continue
+        phases = [ph.state for ph in progs[0].getPhases()]
+        for inl, outl, idx in tl.getConnections():
+            e_in, e_out = inl.getEdge(), outl.getEdge()
+            conns = e_in.getConnections(e_out)
+            if not conns or conns[0].getDirection() not in ("l", "L"):
+                continue
+            states = {p[idx] for p in phases if idx < len(p)}
+            if "G" in states or "g" not in states:
+                continue
+            node = e_in.getToNode()
+            if any(o != e_in and o.getSpeed() >= ban_v and o.getLaneNumber() >= 3
+                   and o.getFromNode() != e_out.getToNode() for o in node.getIncoming()):
+                banned.add((e_in.getID(), e_out.getID()))
+    if banned:
+        tree = ET.parse(con_path)
+        for f, t in sorted(banned):
+            ET.SubElement(tree.getroot(), "delete", attrib={"from": f, "to": t})
+        tree.write(con_path, encoding="utf-8", xml_declaration=True)
+    return banned
 
 
 # ──────────────────────────────────────────────────────────────
@@ -434,6 +487,12 @@ def write_cfg():
         add.append(f"{NAME}.tls.xml")
     if os.path.exists(P(f"{NAME}.poly.xml")):
         add.append(f"{NAME}.poly.xml")
+    rt = TRAFFIC.get("runtime", {})
+    reroute = ""
+    if rt.get("rerouting_period"):
+        reroute = (f'\n        <device.rerouting.probability value="1"/>'
+                   f'\n        <device.rerouting.period value="{rt["rerouting_period"]}"/>'
+                   f'\n        <device.rerouting.adaptation-steps value="18"/>')
     cfg = f"""<configuration>
     <input>
         <net-file value="{NAME}.net.xml"/>
@@ -447,9 +506,9 @@ def write_cfg():
     <processing>
         <time-to-teleport value="{TRAFFIC['time_to_teleport']}"/>
         <collision.check-junctions value="true"/>
-        <collision.action value="warn"/>
+        <collision.action value="{rt.get('collision_action', 'warn')}"/>
         <ignore-route-errors value="true"/>
-        <default.speeddev value="0.1"/>
+        <default.speeddev value="0.1"/>{reroute}
         <lateral-resolution value="0"/>
     </processing>
     <random_number>

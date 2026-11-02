@@ -11,9 +11,12 @@
     <processing>
         <time-to-teleport value="180"/>
         <collision.check-junctions value="true"/>
-        <collision.action value="warn"/>
+        <collision.action value="remove"/>
         <ignore-route-errors value="true"/>
         <default.speeddev value="0.1"/>
+        <device.rerouting.probability value="1"/>
+        <device.rerouting.period value="60"/>
+        <device.rerouting.adaptation-steps value="18"/>
         <lateral-resolution value="0"/>
     </processing>
     <random_number>
