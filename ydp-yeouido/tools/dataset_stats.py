@@ -45,7 +45,8 @@ def main():
                 arr = d["arrived"][last]
                 term = d["terminated"][last]
                 trunc = d["truncated"][last]
-                stuck = term & ~coll & ~arr
+                # v2는 교착 플래그를 직접 저장. v1은 충돌·도착이 아닌 종료(교착 + 드문 시간 제한)를 교착으로 센다
+                stuck = d["stuck"][last] if "stuck" in d.files else ((term | trunc) & ~coll & ~arr)
                 names = [str(x) for x in d["route_names"]]
                 for ri, k in zip(*np.unique(d["route_index"], return_counts=True)):
                     route_steps[names[ri]] += int(k)
@@ -72,7 +73,7 @@ def main():
                 cc["collisions"] += int(coll.sum())
                 cc["arrivals"] += int(arr.sum())
                 cc["stuck"] += int(stuck.sum())
-                cc["timeouts"] += int((trunc & ~coll & ~arr).sum())
+                cc["timeouts"] += int((trunc & ~coll & ~arr & ~stuck).sum())
                 cc["shield_steps"] += sh
         for k in ("files", "transitions", "episodes", "collisions", "arrivals", "stuck", "timeouts", "shield_steps"):
             c[k] += 0
