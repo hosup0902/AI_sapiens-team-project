@@ -110,8 +110,12 @@ OSM 원본을 실제 도로 기준으로 SUMO 도로망을 항목별 대조 (202
 | 상호작용 정량 분석 | `tools/interaction_analysis.py` → `results/analysis/interaction_summary.json`, 그림 3장 | 에피소드당 교차로 39회·신호 정지 1.8회·차선변경 2.3회, 반경 50 m 평균 7.3대 |
 | 실패 분석 | `tools/failure_analysis.py` → `results/analysis/failures.md` | 충돌은 전부 교차로 내부, 다수 피추돌, 교착 = 로터리·서울교 북단 정체 |
 | 데이터 컬럼 사전 | `docs/data_dictionary.md` | 모든 항목 의미·단위·저장 구조·필요성, 관측 44차원 표 |
-| 10^7 데이터 | `tools/collect_multi.py` 다중 AV(12대/시뮬레이션) 수집, 20만 개마다 저장 | 단일 AV 대비 코어당 약 3~5배 |
-| 최종발표 | `docs/final/` pptx(16장, 영상 포함) + 대본 | |
+| 10^7 데이터 | `tools/collect_multi.py` 다중 AV(12대/시뮬레이션) 수집, 20만 개마다 저장 | PPO 합계 20,158,391, v2(기본 항목+State 전부) 10,062,955 |
+| 최종발표 | `docs/final/` pptx·pdf(17장, 영상 포함) + 대본 | 약 12분 40초 (13분 발표) |
+| 평가 기준 대조 | 수업 `6_Project_Evaluation.md` 항목별 근거 → `docs/evaluation_checklist.md` | 아래 |
+| 데이터 v2 | 수업 JSONL 기본 항목(action.*, event.*)·State 절대 정보·감지 차량 상세를 NPZ 배열로 | `data/multi_v2/`, `docs/data_dictionary.md` 4-1절 |
+| 비정상 정지 지표 | `tools/dataset_stats.py`: 에피소드별 최장 정지, 정지 중 적·황신호 대기열 비율 | 최장 정지 중앙값 PPO 60 s ≈ 전문가 55 s, 정지의 82 %가 신호 대기열 |
+| 프로젝트 페이지 | 정책 6종 표, 발표 PDF 링크, HF 전까지 데이터 링크는 GitHub `data/` | `docs/index.html` |
 
 다중 AV 수집에서 겪은 문제: 다른 AV를 장애물로 보면 서로 기다리는 교착, 무시하면 AV끼리 교차로 충돌
 → 투입 순서 우선권(`sumo_env._ignore_blocker`)으로 해결. 컨테이너 재시작(진행 중 작업 소실) → 저장 주기 50만 → 20만.
@@ -120,10 +124,10 @@ OSM 원본을 실제 도로 기준으로 SUMO 도로망을 항목별 대조 (202
 
 0. (로컬) `python tools/fetch_osm.py --force` → `python -m env.road_builder` 로 회전 제한 반영, 간선 차로 수 확인·보정
    - 도로망이 바뀌면 관측 의미가 바뀌므로 전문가 데이터 → PPO를 다시 학습할 것
-1. 10^7 transition: `python collect_pomdp_data.py --model results/final/model.pt --episodes 6000 --workers <코어수> --no-jsonl --name ydp_ppo_bulk_02`
-2. HuggingFace 업로드: `python tools/upload_hf.py --repo <id>/ydp-yeouido-av --files "data/ydp_ppo_*"`
-3. 프로젝트 페이지: `python tools/build_site.py ... --hf <링크> --slides <링크>` 후 GitHub Pages 게시
-4. 발표자료(13분), 팀 역할 분담, 30초 이상 영상(assets/video) 삽입
+1. (완료) 10^7 transition — v2만 10,062,955
+2. HuggingFace 업로드: `python tools/upload_hf.py --repo <id>/ydp-yeouido-av --files "data/*.npz" "data/*.jsonl.gz" "data/multi/*.npz" "data/multi_v2/*.npz"`
+3. 프로젝트 페이지: HF 링크를 `docs/results.json`·`index.html`의 `links.hf`에 넣고(또는 `tools/build_site.py --hf`), GitHub Pages 게시, 이 브랜치를 main에 병합
+4. 발표자료 1번 슬라이드 팀원 이름 입력, 아이캠퍼스 제출 (`docs/evaluation_checklist.md` 3절)
 5. (개선) 교차로 피추돌 감소: 여의교 북단 등 HV 충돌 다발 교차로 형상 보정, AV 교차로 진입 시 상충 차량 TTC 관측 추가
 
 ## 빌드 / 실행

@@ -283,8 +283,8 @@ async function icon(Comp, color, size = 256) {
   tx(s, (DT.total / 1e6).toFixed(2) + "M", { x: 0.85, y: 1.75, w: 4.1, h: 1.2, fontSize: 54, bold: true, color: C.background1 });
   tx(s, "transition 합계", { x: 0.85, y: 2.95, w: 4.1, h: 0.4, fontSize: 15, color: "C9D3E3" });
   tx(s, [{ text: `PPO 전체 컬럼(JSONL) ${num(123356)}`, options: { breakLine: true } },
-         ...(DT.ppo_v2 ? [{ text: `PPO NPZ v2 (수업 항목+State 전부) ${num(DT.ppo_v2)}`, options: { breakLine: true } }] : []),
-         { text: `PPO NPZ v1 (수업 NPZ 기본 키) ${num(DT.ppo_single + DT.ppo_multi - 123356)}`, options: { breakLine: true } },
+         ...(DT.ppo_v2 ? [{ text: `PPO NPZ v2 (+State 전부) ${num(DT.ppo_v2)}`, options: { breakLine: true } }] : []),
+         { text: `PPO NPZ v1 (기본 키) ${num(DT.ppo_single + DT.ppo_multi - 123356)}`, options: { breakLine: true } },
          { text: `전문가(초기화용) ${num(DT.expert)}` }], { x: 0.85, y: 3.55, w: 4.1, h: 1.4, fontSize: 13, color: "C9D3E3", valign: "top", paraSpaceAfter: 4 });
   tx(s, (DT.ppo_v2 >= 1e7 ? `State 포함 v2만 ${(DT.ppo_v2 / 1e6).toFixed(2)}M → 10⁷ 달성. ` : (DT.ppo_total >= 1e7 ? `PPO 정책 데이터 ${(DT.ppo_total / 1e6).toFixed(2)}M → 10⁷ 달성. ` : "")) + "다중 AV 수집: 시뮬레이션 하나에 AV 12대 → SUMO 비용을 나눠 약 2배 빠르게", { x: 0.85, y: 5.0, w: 4.1, h: 0.9, fontSize: 12, color: "FF8A99", valign: "top" });
   [[I.db, C.accent2, "수업 필수", "episode · t · observation(44) · action_raw · lane_change · reward · terminated · truncated · next_observation · detected_vehicles"],

@@ -170,24 +170,39 @@ PPO 최종의 충돌 3건 중 2건은 일반 차량이 교차로에서 AV를 들
 
 ## 8. 데이터셋
 
-| 파일 | 정책 | 에피소드 | transitions | 내용 |
+**PPO 정책 데이터 20,158,391 transition** (전문가 포함 20,395,509). 그중 **v2 10,062,955개만으로 10^7**을 넘고,
+v2는 수업 `collect_pomdp_data.py`의 기본 항목(action.*, event.* 포함)과 **State 절대 정보**를 transition마다 모두 담는다.
+
+| 파일 | 형식 | 에피소드 | transitions | 내용 |
 |---|---|---:|---:|---|
-| `ydp_ppo_final.{jsonl.gz,npz}` | 최종 PPO | 70 | 123,356 | 수업 필수 컬럼 + privileged state(반경 150 m) + 감지 차량 |
-| `ydp_ppo_bulk_*.npz` | 최종 PPO | 420 | 710,764 | 학습용 배열 (NPZ) |
-| `expert_train.{jsonl.gz,npz}` | 전문가 (+가감속 잡음 σ=0.1) | 140 | 237,118 | PPO 초기화용 |
+| `data/multi_v2/ydp_ppo_v2_*.npz` (51개) | NPZ v2 | 6,273 | **10,062,955** | 수업 기본 항목 전부 + State(`state_*`) + 감지 차량 속도·차선·차종 |
+| `data/multi/ydp_ppo_multi_*.npz` (48개) | NPZ v1 | 5,745 | 9,261,316 | 수업 NPZ 기본 키 + ego 위치·속도 |
+| `data/ydp_ppo_final.{jsonl.gz,npz}` | JSONL + NPZ | 70 | 123,356 | 수업 JSONL 전체 컬럼 + privileged state(반경 150 m 차량 전부) |
+| `data/ydp_ppo_bulk_01.npz` | NPZ v1 | 420 | 710,764 | 단일 AV 수집 |
+| `data/expert_train.{jsonl.gz,npz}` | JSONL + NPZ | 140 | 237,118 | 규칙 전문가 (+가감속 잡음 σ=0.1), PPO 초기화용 |
 
-위 데이터 파일은 모두 이 저장소 `data/`에 들어 있어요(총 약 210 MB). 학습 실행 폴더·평가 결과·세션 실험 로그는 `results/`
-(`results/session_logs/README.md` 참고). 컬럼 설명은 `docs/dataset_card.md`, **항목별 의미·단위·저장 구조·필요성은 `docs/data_dictionary.md`**. **10^7 transition 목표**: 이 저장소 코드로
-`python collect_pomdp_data.py --model results/final/model.pt --episodes 6000 --workers <코어 수> --no-jsonl --name ydp_ppo_bulk_02`
-(4코어 기준 약 300 step/s → 약 9시간, 16코어 약 2.5시간). 수집 후 `tools/upload_hf.py`로 업로드.
+- 정책: 최종 PPO(`results/final/model.pt`), 결정적 행동, 안전 필터 ON. 교통 7,200 대/h, 교통이 찬 스냅샷(900~3,300 s)에서 시작, 7개 경로 순환.
+- **다중 AV 수집** (`tools/collect_multi.py`): 한 스텝의 75 %가 SUMO 자체 계산이라, 시뮬레이션 하나에 AV 12대를 넣어 비용을 나눴다
+  (코어당 단일 AV 약 60 → 약 300 transition/s). AV끼리는 먼저 투입된 AV가 교차로 우선권을 갖는다(서로 기다리는 교착·AV끼리 충돌 방지).
+- v2 결과: 에피소드 충돌 0.81% · 도착 96.46% · 교착 2.84% (AV 12대가 함께 달려 단일 AV 평가보다 혼잡),
+  안전 필터 개입 0.16%.
+- **정지 분석** (평가 기준 "비정상 정지·무한 대기"): 정지는 주행 시간의 35 %이고, 그중 **82 %가 적·황신호 앞 150 m 안 대기열**.
+  에피소드별 최장 정지 중앙값 60 s (규칙 전문가 55 s), 즉 신호 한 주기 수준.
+- 무결성 검사·집계: `python tools/dataset_stats.py` → `results/analysis/dataset_stats.json` (파일·run별 에피소드/충돌/도착/교착, 정지 분석).
 
-## 9. 발표 자료
+모든 데이터 파일은 이 저장소 `data/`에 있다(약 1.6 GB). 컬럼 설명은 `docs/dataset_card.md`, **항목별 의미·단위·저장 구조·필요성은 `docs/data_dictionary.md`**
+(v2 키는 4-1절). HuggingFace 업로드: `python tools/upload_hf.py --repo <id>/ydp-yeouido-av --files "data/*.npz" "data/*.jsonl.gz" "data/multi/*.npz" "data/multi_v2/*.npz"`.
 
-- 중간발표(3분): `docs/midterm/중간발표_AI_sapiens.pptx` (PDF 동봉), 대본 `docs/midterm/중간발표_대본.md` (슬라이드 노트에도 포함)
+## 9. 발표 자료 · 평가 기준 대조
+
+- 최종발표(13분): `docs/final/최종발표_AI_sapiens.pptx` (PDF 동봉, 주행 영상 포함 17장), 대본 `docs/final/최종발표_대본.md` (약 12분 40초).
+  수치는 `docs/final/src/make_summary.py` → `node docs/final/src/build.js <out.pptx>`로 결과 JSON에서 다시 채운다.
+- 중간발표(3분): `docs/midterm/중간발표_AI_sapiens.pptx` (PDF 동봉), 대본 `docs/midterm/중간발표_대본.md`
+- **평가 기준 대조표·제출물 체크리스트**: `docs/evaluation_checklist.md` (수업 `6_Project_Evaluation.md` 항목별 근거 파일과 수치)
 
 ## 10. 남은 과제 / 한계
 
 - 회전 제한(OSM restriction) 반영: 로컬에서 `python tools/fetch_osm.py --force` → `python -m env.road_builder`
 - OSM에 차로 수가 없는 간선(국회대로·경인로·노들로 등) 로드뷰 확인 후 `osm_fixes`의 `"name:<도로명>"` 보정
 - HV 교차로 내부 저속 접촉(80분 41~59건)과 AV 피추돌 — SUMO 교차로 모델 한계, 교차로별 형상 보정 여지
-- 10^7 transition 전량 수집 · HuggingFace 업로드 · 발표자료 링크는 팀 계정으로 진행 (`docs/index.html` 링크 칸)
+- HuggingFace 업로드 · GitHub Pages 게시 · 팀원 이름 입력은 팀 계정으로 진행 (`docs/evaluation_checklist.md` 3절)

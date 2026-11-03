@@ -136,6 +136,21 @@
    "mean_return": 71.48764715278317
   },
   {
+   "name": "PPO 최종, 설계 경로 고정",
+   "episodes": 100,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 817.61,
+   "mean_speed_kmh": 23.28949819752292,
+   "min_gap_m_median": 1.4671994417420375,
+   "shield_rate": 0.002325564132333413,
+   "lane_changes_per_ep": 1.37,
+   "mean_return": 69.94150193159179,
+   "route_match_arrived": 0.9459899081400367
+  },
+  {
    "name": "BC (PPO 데이터 모방)",
    "episodes": 100,
    "collision_rate": 0.0,
@@ -148,6 +163,21 @@
    "shield_rate": 0.0010105596895772068,
    "lane_changes_per_ep": 0.45,
    "mean_return": 74.18478341436362
+  },
+  {
+   "name": "TD3+BC (오프라인 RL)",
+   "episodes": 100,
+   "collision_rate": 0.01,
+   "success_rate": 0.96,
+   "stuck_rate": 0.03,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 852.46875,
+   "mean_speed_kmh": 23.83436828358382,
+   "min_gap_m_median": 0.7761454293909442,
+   "shield_rate": 0.002251994173835735,
+   "lane_changes_per_ep": 2.54,
+   "mean_return": 69.61311956025395,
+   "route_match_arrived": 0.5836479780830176
   },
   {
    "name": "규칙 전문가 (IDM)",
@@ -180,8 +210,8 @@
  ],
  "links": {
   "hf": null,
-  "slides": null
+  "slides": "https://github.com/hosup0902/AI_sapiens-team-project/blob/main/ydp-yeouido/docs/final/%EC%B5%9C%EC%A2%85%EB%B0%9C%ED%91%9C_AI_sapiens.pdf"
  },
  "train_html": "<p>BC 초기화 → PPO(필터 ON) → 필터 OFF 미세조정 → 오토홀드 미세조정. 전문가 데이터는 초기화·기준선에만 사용.</p><figure><img src=\"img/training_curve.png\" alt=\"PPO 학습 곡선\"><figcaption>학습 리턴, 평가 리턴, 평가 속도·충돌률 (세 학습 단계)</figcaption></figure>",
- "data_html": "<p>PPO 전체 컬럼 123,356 + PPO NPZ 710,764 + 전문가 237,118 = 약 107만 transition (저장소 data/). 10<sup>7</sup> 목표 명령은 README 참고.</p>"
+ "data_html": "<p><b>PPO 정책 데이터 20,158,391 transition</b> — 그중 v2 10,062,955개만으로 10<sup>7</sup> 달성. v2는 수업 기본 항목(observation·action·reward·terminated/truncated·next_observation·detected_vehicles·event)과 State 절대 정보(위치·도로·차선·속도·가속도·방향·제한속도·경로 진행·다음 신호)를 transition마다 모두 저장.</p><p>수집 조건: 최종 PPO, HV 7,200대/h, 7개 경로, 시뮬레이션당 AV 12대. 에피소드 충돌 0.8 % · 도착 96.5 %. 정지 시간의 82 %는 적·황신호 대기열. 항목별 의미·단위·저장 구조는 저장소 <code>docs/data_dictionary.md</code>.</p>"
 }

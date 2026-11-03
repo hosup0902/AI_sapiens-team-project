@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Collision Rate | < 5 % (100 에피소드) | PPO 3 % (필터 ON) · 3 % (필터 OFF) · 0 % (설계 경로 고정) | `results/final/eval_ppo*.json` |
 | 목적지 완주 | Start → Goal | 완주 97 % / 96 % / 100 % | 같은 파일 `success_rate` |
-| └ 비정상 정지 | 하지 않는가 | 에피소드별 최장 정지 중앙값이 규칙 전문가와 같은 수준(신호 한 주기). v2 데이터에서는 정지 시간 중 적·황신호 앞 비율을 직접 측정 | `results/analysis/dataset_stats.json` `longest_stop_s`, `stopped_at_red_pct_of_stops` |
+| └ 비정상 정지 | 하지 않는가 | 에피소드별 최장 정지 중앙값 PPO 60 s ≈ 규칙 전문가 55 s (신호 한 주기). v2 1,006만 step에서 정지 시간의 82 %가 적·황신호 앞 150 m 안 대기열 | `results/analysis/dataset_stats.json` `longest_stop_s`, `stopped_at_red_pct_of_stops` |
 | └ 잘못된 Route | 빠지지 않는가 | 재경로를 끈 평가에서 설계 경로 엣지 일치율 94.6 % (나머지는 0.5 s 안에 지나는 교차로 연결 엣지) | `eval_ppo_fixed.json` `route_match_arrived` |
 | └ 무한정 대기 | 하지 않는가 | 240 s 연속 정지 = 교착 실패로 종료·집계 (PPO 0~1 %), 원인은 대기열 선두 추적으로 실제 정체 확인 | `results/analysis/failures.md` |
 | 충분한 일반 차량 | 일정 수 이상 | HV 7,200 대/h (동시 1,000여 대), Krauss·IDM·EIDM·ACC·버스·트럭 혼합 | `env/road_config.py`, README 4절 |
@@ -25,7 +25,7 @@
 | Simulation 안정성 | 동적 재경로로 텔레포트 255 → 28~43건/80분(9,600여 대 중 0.3~0.45 %), 종료 잔류 0~2대, 시드 4개 | `tools/stability_test.py`, README 4절 |
 | AV 주행 성능 | 위 1절 | `results/final/` |
 | Traffic 구성 | 7,200 대/h, 컨트롤러 4종 + 버스·트럭, 평균 25.7~26.1 km/h | README 4절 |
-| Dataset 구축 | 10^7 이상, 수업 기본 항목 + State 절대 정보 포함 (v2), 항목별 의미·단위·저장 구조 문서화 | `data/`, `docs/data_dictionary.md`, `docs/dataset_card.md`, `tools/dataset_stats.py` |
+| Dataset 구축 | PPO 20,158,391 transition, 그중 v2 10,062,955개가 수업 기본 항목 + State 절대 정보를 모두 포함 (51개 파일 무결성 검사 통과), 항목별 의미·단위·저장 구조 문서화 | `data/`, `docs/data_dictionary.md`, `docs/dataset_card.md`, `tools/dataset_stats.py` |
 | 분석 및 설명 | 문제 → 원인 측정 → 해결 → 재측정 9건 | `PROGRESS.md` 문제 해결 목록, 발표 15~16번 |
 | 최종 결과물 | 프로젝트 페이지, 코드(환경/학습/평가/수집 분리), 모델, 발표자료(PDF), 데이터 | 아래 3절 |
 
