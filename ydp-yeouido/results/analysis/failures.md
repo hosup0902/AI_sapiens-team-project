@@ -26,6 +26,12 @@
 | 53 | nodeul_to_dangsan | 충돌 | junction | 피추돌 | (교차로) `:414684910_10_0` | 0.0 km/h | 14.4 km/h |
 | 79 | seogang_to_gyeongin | 충돌 | junction | 피추돌 | (교차로) `:9754805607_5_2` | 19.6 km/h | 37.8 km/h |
 
+## eval_ppo_fixed.json — ppo · 필터 ON · 100 에피소드
+
+충돌률 0.0% · 완주율 100.0% · 교착 0.0% · 시간초과 0.0%
+
+실패 없음.
+
 ## eval_ppo_noshield.json — ppo · 필터 OFF · 100 에피소드
 
 충돌률 3.0% · 완주율 96.0% · 교착 1.0% · 시간초과 0.0%
@@ -37,12 +43,23 @@
 | 53 | nodeul_to_dangsan | 충돌 | junction | 피추돌 | (교차로) `:4617370856_0_0` | 24.5 km/h | 9.9 km/h |
 | 70 | gyeongin_to_mapo | 충돌 | junction | AV 과실 | (교차로) `:4617016274_15_0` | 16.1 km/h | 53.9 km/h |
 
+## eval_td3bc.json — td3bc · 필터 ON · 100 에피소드
+
+충돌률 1.0% · 완주율 96.0% · 교착 3.0% · 시간초과 0.0%
+
+| 에피소드 | 경로 | 결과 | 유형 | 책임 | 위치 | AV 속도 | 상대 속도 |
+|---:|---|---|---|---|---|---:|---:|
+| 39 | nodeul_to_dangsan | stuck | – | – | 진행 41% | – | – |
+| 46 | nodeul_to_dangsan | stuck | – | – | 진행 81% | – | – |
+| 53 | nodeul_to_dangsan | stuck | – | – | 진행 81% | – | – |
+| 98 | gyeongin_to_mapo | 충돌 | junction | 피추돌 | (교차로) `:cluster_2815064031_28150640` | 29.7 km/h | 26.6 km/h |
+
 ## 전체 집계
 
 | 결과 | 유형 | 책임 | 건수 |
 |---|---|---|---:|
-| collision | junction | 피추돌 | 4 |
-| stuck | – | – | 2 |
+| stuck | – | – | 5 |
+| collision | junction | 피추돌 | 5 |
 | collision | junction | AV 과실 | 2 |
 
 ### 해석

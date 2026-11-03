@@ -1,0 +1,338 @@
+{
+ "eval": {
+  "ppo": {
+   "episodes": 100,
+   "collision_rate": 0.03,
+   "success_rate": 0.97,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 853.4845360824743,
+   "mean_speed_kmh": 24.136580923864212,
+   "shield_rate": 0.0016547720936356041,
+   "route_match_arrived": null,
+   "av_fault_rate": 0.01,
+   "per_route": {
+    "daebang_to_seogang": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 742.1666666666666
+    },
+    "dangsan_to_noryangjin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 720.1428571428571
+    },
+    "gyeongin_to_mapo": {
+     "collision_rate": 0.06666666666666667,
+     "success_rate": 0.9333333333333333,
+     "mean_travel_time_s": 966.1071428571429
+    },
+    "mapo_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 849.25
+    },
+    "nodeul_to_dangsan": {
+     "collision_rate": 0.07142857142857142,
+     "success_rate": 0.9285714285714286,
+     "mean_travel_time_s": 1162.4615384615386
+    },
+    "olympic_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 708.9285714285714
+    },
+    "seogang_to_gyeongin": {
+     "collision_rate": 0.07142857142857142,
+     "success_rate": 0.9285714285714286,
+     "mean_travel_time_s": 855.5
+    }
+   }
+  },
+  "ppo_noshield": {
+   "episodes": 100,
+   "collision_rate": 0.03,
+   "success_rate": 0.96,
+   "stuck_rate": 0.01,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 864.765625,
+   "mean_speed_kmh": 24.330619329687497,
+   "shield_rate": 0.0,
+   "route_match_arrived": null,
+   "av_fault_rate": 0.01,
+   "per_route": {
+    "daebang_to_seogang": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 743.9333333333333
+    },
+    "dangsan_to_noryangjin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 730.1428571428571
+    },
+    "gyeongin_to_mapo": {
+     "collision_rate": 0.06666666666666667,
+     "success_rate": 0.9333333333333333,
+     "mean_travel_time_s": 1060.642857142857
+    },
+    "mapo_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 810.8928571428571
+    },
+    "nodeul_to_dangsan": {
+     "collision_rate": 0.14285714285714285,
+     "success_rate": 0.8571428571428571,
+     "mean_travel_time_s": 1135.7916666666667
+    },
+    "olympic_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 0.9285714285714286,
+     "mean_travel_time_s": 678.0769230769231
+    },
+    "seogang_to_gyeongin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 927.8928571428571
+    }
+   }
+  },
+  "ppo_fixed": {
+   "episodes": 100,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 817.61,
+   "mean_speed_kmh": 23.28949819752292,
+   "shield_rate": 0.002325564132333413,
+   "route_match_arrived": 0.9459899081400367,
+   "av_fault_rate": 0.0,
+   "per_route": {
+    "daebang_to_seogang": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 698.3333333333334
+    },
+    "dangsan_to_noryangjin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 1012.9642857142857
+    },
+    "gyeongin_to_mapo": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 786.0333333333333
+    },
+    "mapo_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 728.0
+    },
+    "nodeul_to_dangsan": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 906.0357142857143
+    },
+    "olympic_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 738.1785714285714
+    },
+    "seogang_to_gyeongin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 864.5
+    }
+   }
+  },
+  "bc": {
+   "episodes": 100,
+   "collision_rate": 0.0,
+   "success_rate": 0.99,
+   "stuck_rate": 0.01,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 917.1616161616162,
+   "mean_speed_kmh": 22.757009196351905,
+   "shield_rate": 0.0010105596895772068,
+   "route_match_arrived": null,
+   "av_fault_rate": 0.0,
+   "per_route": {
+    "daebang_to_seogang": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 704.8333333333334
+    },
+    "dangsan_to_noryangjin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 759.3571428571429
+    },
+    "gyeongin_to_mapo": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 1094.1
+    },
+    "mapo_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 877.2142857142857
+    },
+    "nodeul_to_dangsan": {
+     "collision_rate": 0.0,
+     "success_rate": 0.9285714285714286,
+     "mean_travel_time_s": 1230.0
+    },
+    "olympic_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 740.6071428571429
+    },
+    "seogang_to_gyeongin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 1038.892857142857
+    }
+   }
+  },
+  "td3bc": {
+   "episodes": 100,
+   "collision_rate": 0.01,
+   "success_rate": 0.96,
+   "stuck_rate": 0.03,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 852.46875,
+   "mean_speed_kmh": 23.83436828358382,
+   "shield_rate": 0.002251994173835735,
+   "route_match_arrived": 0.5836479780830176,
+   "av_fault_rate": 0.0,
+   "per_route": {
+    "daebang_to_seogang": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 711.6333333333333
+    },
+    "dangsan_to_noryangjin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 712.3928571428571
+    },
+    "gyeongin_to_mapo": {
+     "collision_rate": 0.06666666666666667,
+     "success_rate": 0.9333333333333333,
+     "mean_travel_time_s": 1016.3571428571429
+    },
+    "mapo_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 867.2857142857143
+    },
+    "nodeul_to_dangsan": {
+     "collision_rate": 0.0,
+     "success_rate": 0.7857142857142857,
+     "mean_travel_time_s": 1150.8181818181818
+    },
+    "olympic_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 655.4285714285714
+    },
+    "seogang_to_gyeongin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 927.3571428571429
+    }
+   }
+  },
+  "expert": {
+   "episodes": 100,
+   "collision_rate": 0.0,
+   "success_rate": 1.0,
+   "stuck_rate": 0.0,
+   "timeout_rate": 0.0,
+   "mean_travel_time_s": 863.87,
+   "mean_speed_kmh": 23.926432497158295,
+   "shield_rate": 0.0015121986759905177,
+   "route_match_arrived": null,
+   "av_fault_rate": 0.0,
+   "per_route": {
+    "daebang_to_seogang": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 720.8666666666667
+    },
+    "dangsan_to_noryangjin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 731.3214285714286
+    },
+    "gyeongin_to_mapo": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 961.6
+    },
+    "mapo_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 787.5714285714286
+    },
+    "nodeul_to_dangsan": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 1219.607142857143
+    },
+    "olympic_to_singil": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 696.8214285714286
+    },
+    "seogang_to_gyeongin": {
+     "collision_rate": 0.0,
+     "success_rate": 1.0,
+     "mean_travel_time_s": 932.5357142857143
+    }
+   }
+  }
+ },
+ "data": {
+  "ppo_single": 834120,
+  "ppo_single_eps": 490,
+  "ppo_multi": 7620265,
+  "ppo_multi_eps": 4747,
+  "expert": 237118,
+  "total": 8691503,
+  "ppo_total": 8454385,
+  "multi_files": 39,
+  "multi_collision_rate": 0.008426374552348851,
+  "multi_arrival_rate": 0.9580787866020645,
+  "multi_stuck_rate": 0.011796924373288392
+ },
+ "interaction": {
+  "mean_per_episode": {
+   "신호 정지": 1.8,
+   "대기열(앞차) 정지": 0.4,
+   "교차로 양보 정지": 0.1,
+   "교차로 통과": 39.2,
+   "차선변경 (경로 유지)": 1.4,
+   "차선변경 (정책 재량)": 0.9
+  },
+  "ttc_lt4_pct_of_time": 1.14,
+  "vehicles_within_50m": {
+   "mean": 7.3,
+   "p90": 22
+  },
+  "vehicles_within_150m": {
+   "mean": 23.4,
+   "p90": 60
+  },
+  "nearby_vehicle_types_pct": {
+   "hv_krauss": 33.1,
+   "hv_idm": 24.8,
+   "hv_eidm": 21.3,
+   "hv_acc": 12.0,
+   "hv_bus": 5.8,
+   "hv_truck": 3.1
+  }
+ }
+}

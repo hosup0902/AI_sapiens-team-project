@@ -100,6 +100,22 @@ OSM 원본을 실제 도로 기준으로 SUMO 도로망을 항목별 대조 (202
 8. PPO 필터 의존(필터 OFF 시 7 %) → 필터 OFF 미세조정
 9. 정지 중 미세 전진 추돌 → 오토홀드 (필터 OFF 충돌 10 % → 1~3 %)
 
+
+## 점수 보완 작업 (2026-11-03)
+
+| 항목 | 내용 | 결과 |
+|---|---|---|
+| 설계 경로 고정 평가 | `evaluate.py --fixed-route` (재경로 없는 `ego_type_fixed`) + 설계 경로 일치율 지표 | PPO 충돌 0 %, 완주 100 %, 일치율 94.6 % |
+| 오프라인 RL (Option) | `train_offline.py` TD3+BC, PPO 데이터 83만 transition | 충돌 1 %, 완주 96 %, 교착 3 % |
+| 상호작용 정량 분석 | `tools/interaction_analysis.py` → `results/analysis/interaction_summary.json`, 그림 3장 | 에피소드당 교차로 39회·신호 정지 1.8회·차선변경 2.3회, 반경 50 m 평균 7.3대 |
+| 실패 분석 | `tools/failure_analysis.py` → `results/analysis/failures.md` | 충돌은 전부 교차로 내부, 다수 피추돌, 교착 = 로터리·서울교 북단 정체 |
+| 데이터 컬럼 사전 | `docs/data_dictionary.md` | 모든 항목 의미·단위·저장 구조·필요성, 관측 44차원 표 |
+| 10^7 데이터 | `tools/collect_multi.py` 다중 AV(12대/시뮬레이션) 수집, 20만 개마다 저장 | 단일 AV 대비 코어당 약 3~5배 |
+| 최종발표 | `docs/final/` pptx(16장, 영상 포함) + 대본 | |
+
+다중 AV 수집에서 겪은 문제: 다른 AV를 장애물로 보면 서로 기다리는 교착, 무시하면 AV끼리 교차로 충돌
+→ 투입 순서 우선권(`sumo_env._ignore_blocker`)으로 해결. 컨테이너 재시작(진행 중 작업 소실) → 저장 주기 50만 → 20만.
+
 ## 다음 할 일
 
 0. (로컬) `python tools/fetch_osm.py --force` → `python -m env.road_builder` 로 회전 제한 반영, 간선 차로 수 확인·보정
