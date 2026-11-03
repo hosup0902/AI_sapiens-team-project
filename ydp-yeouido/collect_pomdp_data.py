@@ -45,7 +45,9 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 def detect_algorithm(model_path):
     import torch
     ck = torch.load(model_path, map_location="cpu", weights_only=True)
-    return "bc" if isinstance(ck, dict) and ck.get("algorithm") == "bc" else "ppo"
+    if isinstance(ck, dict) and ck.get("algorithm") in ("bc", "td3bc"):
+        return ck["algorithm"]
+    return "ppo"
 
 
 def make_policy(args, env, worker_seed):

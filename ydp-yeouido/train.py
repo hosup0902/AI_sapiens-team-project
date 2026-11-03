@@ -55,12 +55,13 @@ HPARAMS = dict(
 )
 
 
-def make_env(seed=0, route_mode="random", shield=True):
+def make_env(seed=0, route_mode="random", shield=True, fixed_route=False):
     from env.sumo_env import YdpCityEnv
     action = dict(ACTION)
     if not shield:
         action["shield"] = {**ACTION["shield"], "enabled": False}
-    return YdpCityEnv(SIMULATION, OBSERVATION, action, REWARD, seed=seed, route_mode=route_mode)
+    return YdpCityEnv(SIMULATION, OBSERVATION, action, REWARD, seed=seed, route_mode=route_mode,
+                      fixed_route=fixed_route)
 
 
 def discounted_returns(rew, ep, term, gamma):

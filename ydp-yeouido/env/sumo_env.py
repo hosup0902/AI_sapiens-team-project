@@ -167,6 +167,9 @@ class YdpCityEnv(gym.Env):
         self.ego_length = float(ego["length"])
 
         self.ego_id = "ego"
+        # 다중 AV 수집(tools/collect_multi.py): 이 접두사의 다른 AV는 교차로 장애물 인식에서 제외
+        #   (서로를 '교차로를 막는 차'로 보고 영원히 기다리는 AV-AV 교착 방지. 우선권은 SUMO가 처리)
+        self.blocker_ignore_prefix = None
         self.obs_offsets = (+2, +1, 0, -1, -2)
         self.obs_dim = 1 + 5 * 4 + 5 + 5 + 13
         self.action_space = spaces.Box(-1.0, 1.0, shape=(self.act_dim,), dtype=np.float32)
@@ -562,7 +565,7 @@ class YdpCityEnv(gym.Env):
             return out
         for f in foes:
             fid, ego_d, foe_d, _ego_exit, foe_exit = f[0], f[1], f[2], f[3], f[4]
-            if ego_d < -0.5:
+            if ego_d < -0.5 or (self.blocker_ignore_prefix and fid.startswith(self.blocker_ignore_prefix)):
                 continue
             try:
                 fv = T.vehicle.getSpeed(fid)
@@ -661,7 +664,8 @@ class YdpCityEnv(gym.Env):
         out = []
         r2 = (horizon + 15.0) ** 2
         for vid in T.vehicle.getIDList():
-            if vid == self.ego_id or vid == lead_id:
+            if vid == self.ego_id or vid == lead_id or \
+                    (self.blocker_ignore_prefix and vid.startswith(self.blocker_ignore_prefix)):
                 continue
             fx, fy = T.vehicle.getPosition(vid)
             if (fx - ex) ** 2 + (fy - ey) ** 2 > r2:
@@ -731,6 +735,13 @@ class YdpCityEnv(gym.Env):
     # 1 스텝
     # ==================================================================
     def step(self, action):
+        pre = self.apply_action(action)
+        self.T.simulationStep()
+        return self.observe_step(pre)
+
+    # 여러 AV가 한 시뮬레이션을 공유할 때(tools/collect_multi.py): 모든 AV의 apply_action →
+    # simulationStep 한 번 → 각 AV의 observe_step. 단일 AV에서는 step()과 완전히 같다.
+    def apply_action(self, action):
         T = self.T
         a = np.asarray(action, dtype=np.float32).reshape(-1)
         accel_raw = float(np.clip(a[self.accel_index], -1.0, 1.0))
@@ -751,8 +762,11 @@ class YdpCityEnv(gym.Env):
                 v_des, shield_on = self._shield_speed(v_des)
             T.vehicle.setSpeed(self.ego_id, v_des)
             lane_applied = self._apply_lane_change(lane_change)
+        return (accel_raw, lane_raw, lane_change, lane_applied, lane_before, shield_on)
 
-        T.simulationStep()
+    def observe_step(self, pre):
+        T = self.T
+        accel_raw, lane_raw, lane_change, lane_applied, lane_before, shield_on = pre
         self.step_count += 1
 
         collided = self.ego_id in T.simulation.getCollidingVehiclesIDList()

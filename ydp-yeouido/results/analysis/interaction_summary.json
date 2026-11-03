@@ -1,0 +1,836 @@
+{
+ "source": "data/ydp_ppo_final.jsonl.gz",
+ "episodes": 70,
+ "mean_per_episode": {
+  "신호 정지": 1.8,
+  "대기열(앞차) 정지": 0.4,
+  "교차로 양보 정지": 0.1,
+  "교차로 통과": 39.2,
+  "차선변경 (경로 유지)": 1.4,
+  "차선변경 (정책 재량)": 0.9
+ },
+ "ttc_lt4_pct_of_time": 1.14,
+ "vehicles_within_50m": {
+  "mean": 7.3,
+  "p90": 22
+ },
+ "vehicles_within_150m": {
+  "mean": 23.4,
+  "p90": 60
+ },
+ "nearby_vehicle_types_pct": {
+  "hv_krauss": 33.1,
+  "hv_idm": 24.8,
+  "hv_eidm": 21.3,
+  "hv_acc": 12.0,
+  "hv_bus": 5.8,
+  "hv_truck": 3.1
+ },
+ "by_route": {
+  "daebang_to_seogang": {
+   "episodes": 10,
+   "stop_signal": 1.1,
+   "stop_queue": 0.5,
+   "stop_yield": 0.0,
+   "junction": 33.9,
+   "lc_route": 2.1,
+   "lc_policy": 0.7,
+   "ttc_lt4_pct": 1.62
+  },
+  "dangsan_to_noryangjin": {
+   "episodes": 10,
+   "stop_signal": 1.0,
+   "stop_queue": 0.0,
+   "stop_yield": 0.0,
+   "junction": 37.3,
+   "lc_route": 0.0,
+   "lc_policy": 0.8,
+   "ttc_lt4_pct": 1.07
+  },
+  "gyeongin_to_mapo": {
+   "episodes": 10,
+   "stop_signal": 2.9,
+   "stop_queue": 0.5,
+   "stop_yield": 0.0,
+   "junction": 48.6,
+   "lc_route": 2.4,
+   "lc_policy": 0.9,
+   "ttc_lt4_pct": 0.95
+  },
+  "mapo_to_singil": {
+   "episodes": 10,
+   "stop_signal": 1.6,
+   "stop_queue": 0.1,
+   "stop_yield": 0.0,
+   "junction": 29.5,
+   "lc_route": 0.5,
+   "lc_policy": 0.8,
+   "ttc_lt4_pct": 0.94
+  },
+  "nodeul_to_dangsan": {
+   "episodes": 10,
+   "stop_signal": 1.6,
+   "stop_queue": 1.2,
+   "stop_yield": 0.2,
+   "junction": 37.4,
+   "lc_route": 2.0,
+   "lc_policy": 1.3,
+   "ttc_lt4_pct": 0.75
+  },
+  "olympic_to_singil": {
+   "episodes": 10,
+   "stop_signal": 1.4,
+   "stop_queue": 0.4,
+   "stop_yield": 0.0,
+   "junction": 36.0,
+   "lc_route": 1.2,
+   "lc_policy": 0.7,
+   "ttc_lt4_pct": 1.03
+  },
+  "seogang_to_gyeongin": {
+   "episodes": 10,
+   "stop_signal": 2.7,
+   "stop_queue": 0.4,
+   "stop_yield": 0.2,
+   "junction": 52.0,
+   "lc_route": 1.6,
+   "lc_policy": 1.4,
+   "ttc_lt4_pct": 1.65
+  }
+ },
+ "per_episode": [
+  {
+   "episode": 0,
+   "route": "gyeongin_to_mapo",
+   "steps": 4800,
+   "outcome": "stuck/timeout",
+   "ttc_lt4_frac": 0.005416666666666667,
+   "junction": 28,
+   "lc_route": 3,
+   "stop_signal": 1,
+   "stop_other": 1,
+   "stop_queue": 3
+  },
+  {
+   "episode": 1,
+   "route": "daebang_to_seogang",
+   "steps": 1404,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.007834757834757835,
+   "junction": 32,
+   "lc_route": 1,
+   "stop_signal": 2
+  },
+  {
+   "episode": 2,
+   "route": "seogang_to_gyeongin",
+   "steps": 2006,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.013958125623130608,
+   "junction": 46,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 3,
+   "route": "mapo_to_singil",
+   "steps": 883,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.013590033975084938,
+   "junction": 27
+  },
+  {
+   "episode": 4,
+   "route": "nodeul_to_dangsan",
+   "steps": 2556,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.006651017214397496,
+   "junction": 51,
+   "stop_other": 1,
+   "lc_policy": 2,
+   "stop_signal": 1,
+   "lc_route": 2
+  },
+  {
+   "episode": 5,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1228,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.004071661237785016,
+   "junction": 38,
+   "stop_signal": 2,
+   "lc_policy": 1
+  },
+  {
+   "episode": 6,
+   "route": "olympic_to_singil",
+   "steps": 1585,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0056782334384858045,
+   "junction": 41,
+   "lc_policy": 2,
+   "lc_route": 2,
+   "stop_queue": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 7,
+   "route": "gyeongin_to_mapo",
+   "steps": 1682,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01248513674197384,
+   "junction": 47,
+   "stop_signal": 6,
+   "lc_route": 3
+  },
+  {
+   "episode": 8,
+   "route": "daebang_to_seogang",
+   "steps": 1960,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.008673469387755102,
+   "junction": 31,
+   "lc_route": 1,
+   "stop_signal": 2,
+   "stop_queue": 1
+  },
+  {
+   "episode": 9,
+   "route": "seogang_to_gyeongin",
+   "steps": 1949,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.018471010774756286,
+   "junction": 64,
+   "lc_route": 2,
+   "stop_yield": 1,
+   "stop_signal": 4
+  },
+  {
+   "episode": 10,
+   "route": "mapo_to_singil",
+   "steps": 1424,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0007022471910112359,
+   "junction": 30,
+   "lc_policy": 2,
+   "stop_signal": 3
+  },
+  {
+   "episode": 11,
+   "route": "nodeul_to_dangsan",
+   "steps": 3660,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.005191256830601093,
+   "junction": 35,
+   "lc_policy": 1,
+   "stop_queue": 2,
+   "stop_other": 2,
+   "lc_route": 1,
+   "stop_signal": 5,
+   "stop_yield": 1
+  },
+  {
+   "episode": 12,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1196,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01588628762541806,
+   "junction": 36,
+   "stop_signal": 1,
+   "lc_policy": 1
+  },
+  {
+   "episode": 13,
+   "route": "olympic_to_singil",
+   "steps": 1551,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.009026434558349452,
+   "junction": 39,
+   "lc_policy": 1,
+   "stop_signal": 1,
+   "lc_route": 1
+  },
+  {
+   "episode": 14,
+   "route": "gyeongin_to_mapo",
+   "steps": 2214,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0040650406504065045,
+   "junction": 52,
+   "lc_route": 1,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 15,
+   "route": "daebang_to_seogang",
+   "steps": 2139,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0070126227208976155,
+   "junction": 46,
+   "stop_signal": 3,
+   "lc_policy": 1,
+   "lc_route": 3,
+   "stop_queue": 3
+  },
+  {
+   "episode": 16,
+   "route": "seogang_to_gyeongin",
+   "steps": 2309,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01602425292334344,
+   "junction": 63,
+   "lc_policy": 1,
+   "stop_signal": 5,
+   "stop_queue": 2,
+   "stop_yield": 1,
+   "lc_route": 2
+  },
+  {
+   "episode": 17,
+   "route": "mapo_to_singil",
+   "steps": 1284,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.02102803738317757,
+   "junction": 27,
+   "stop_queue": 1,
+   "stop_signal": 2,
+   "lc_policy": 1
+  },
+  {
+   "episode": 18,
+   "route": "nodeul_to_dangsan",
+   "steps": 4137,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.00676818950930626,
+   "junction": 35,
+   "lc_policy": 3,
+   "lc_route": 3,
+   "stop_signal": 2,
+   "stop_queue": 2,
+   "stop_yield": 1
+  },
+  {
+   "episode": 19,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1169,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.016253207869974338,
+   "junction": 38,
+   "lc_policy": 1
+  },
+  {
+   "episode": 20,
+   "route": "olympic_to_singil",
+   "steps": 1053,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.004748338081671415,
+   "junction": 33,
+   "lc_route": 2
+  },
+  {
+   "episode": 21,
+   "route": "gyeongin_to_mapo",
+   "steps": 1387,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.012256669069935111,
+   "junction": 46,
+   "lc_route": 2,
+   "stop_signal": 2
+  },
+  {
+   "episode": 22,
+   "route": "daebang_to_seogang",
+   "steps": 1324,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.03323262839879154,
+   "junction": 32,
+   "lc_route": 2,
+   "lc_policy": 2
+  },
+  {
+   "episode": 23,
+   "route": "seogang_to_gyeongin",
+   "steps": 2012,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.015904572564612324,
+   "junction": 46,
+   "stop_signal": 2,
+   "lc_policy": 1
+  },
+  {
+   "episode": 24,
+   "route": "mapo_to_singil",
+   "steps": 1380,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.005797101449275362,
+   "junction": 27,
+   "stop_signal": 1
+  },
+  {
+   "episode": 25,
+   "route": "nodeul_to_dangsan",
+   "steps": 1029,
+   "outcome": "collision",
+   "ttc_lt4_frac": 0.006802721088435374,
+   "junction": 12
+  },
+  {
+   "episode": 26,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1229,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0040683482506102524,
+   "junction": 35,
+   "stop_signal": 1,
+   "lc_policy": 1
+  },
+  {
+   "episode": 27,
+   "route": "olympic_to_singil",
+   "steps": 1289,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.009309542280837859,
+   "junction": 43,
+   "stop_signal": 2,
+   "lc_route": 3
+  },
+  {
+   "episode": 28,
+   "route": "gyeongin_to_mapo",
+   "steps": 1687,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.002963841138114997,
+   "junction": 37,
+   "lc_policy": 1,
+   "stop_queue": 1,
+   "lc_route": 3,
+   "stop_signal": 1
+  },
+  {
+   "episode": 29,
+   "route": "daebang_to_seogang",
+   "steps": 1064,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.009398496240601503,
+   "junction": 32,
+   "lc_route": 2
+  },
+  {
+   "episode": 30,
+   "route": "seogang_to_gyeongin",
+   "steps": 2090,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01770334928229665,
+   "junction": 59,
+   "lc_route": 7,
+   "stop_queue": 2,
+   "stop_signal": 4,
+   "lc_policy": 4
+  },
+  {
+   "episode": 31,
+   "route": "mapo_to_singil",
+   "steps": 1033,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.008712487899322363,
+   "junction": 26,
+   "lc_policy": 2,
+   "stop_signal": 1
+  },
+  {
+   "episode": 32,
+   "route": "nodeul_to_dangsan",
+   "steps": 2735,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01060329067641682,
+   "junction": 34,
+   "lc_policy": 1,
+   "lc_route": 1,
+   "stop_signal": 1,
+   "stop_queue": 1,
+   "stop_other": 1
+  },
+  {
+   "episode": 33,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1127,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.013309671694764862,
+   "junction": 38,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 34,
+   "route": "olympic_to_singil",
+   "steps": 1353,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.011825572801182557,
+   "junction": 39,
+   "stop_signal": 3,
+   "lc_policy": 1,
+   "lc_route": 1
+  },
+  {
+   "episode": 35,
+   "route": "gyeongin_to_mapo",
+   "steps": 2718,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.009565857247976454,
+   "junction": 78,
+   "stop_signal": 4,
+   "lc_route": 4,
+   "lc_policy": 3
+  },
+  {
+   "episode": 36,
+   "route": "daebang_to_seogang",
+   "steps": 1462,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.027359781121751026,
+   "junction": 42,
+   "stop_signal": 3,
+   "lc_policy": 1,
+   "lc_route": 3,
+   "stop_queue": 1
+  },
+  {
+   "episode": 37,
+   "route": "seogang_to_gyeongin",
+   "steps": 1925,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.02025974025974026,
+   "junction": 46,
+   "lc_route": 1,
+   "stop_signal": 4,
+   "lc_policy": 2
+  },
+  {
+   "episode": 38,
+   "route": "mapo_to_singil",
+   "steps": 1155,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.006060606060606061,
+   "junction": 28,
+   "lc_policy": 1,
+   "stop_other": 1,
+   "lc_route": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 39,
+   "route": "nodeul_to_dangsan",
+   "steps": 2560,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0046875,
+   "junction": 51,
+   "lc_policy": 2,
+   "lc_route": 3
+  },
+  {
+   "episode": 40,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1125,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.012444444444444444,
+   "junction": 37,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 41,
+   "route": "olympic_to_singil",
+   "steps": 1567,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.017868538608806637,
+   "junction": 40,
+   "lc_policy": 1,
+   "stop_queue": 1,
+   "lc_route": 1
+  },
+  {
+   "episode": 42,
+   "route": "gyeongin_to_mapo",
+   "steps": 3005,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.004326123128119801,
+   "junction": 77,
+   "stop_signal": 4,
+   "lc_route": 5,
+   "lc_policy": 2
+  },
+  {
+   "episode": 43,
+   "route": "daebang_to_seogang",
+   "steps": 1346,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.02823179791976226,
+   "junction": 31,
+   "lc_route": 2,
+   "lc_policy": 2
+  },
+  {
+   "episode": 44,
+   "route": "seogang_to_gyeongin",
+   "steps": 2167,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.012921089063221043,
+   "junction": 59,
+   "lc_policy": 2,
+   "stop_signal": 3,
+   "lc_route": 2
+  },
+  {
+   "episode": 45,
+   "route": "mapo_to_singil",
+   "steps": 1798,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.006117908787541713,
+   "junction": 49,
+   "stop_signal": 3,
+   "lc_route": 4
+  },
+  {
+   "episode": 46,
+   "route": "nodeul_to_dangsan",
+   "steps": 1588,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0069269521410579345,
+   "junction": 35,
+   "lc_route": 2,
+   "stop_signal": 1
+  },
+  {
+   "episode": 47,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1057,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.000946073793755913,
+   "junction": 39,
+   "stop_signal": 2
+  },
+  {
+   "episode": 48,
+   "route": "olympic_to_singil",
+   "steps": 1346,
+   "outcome": "stuck/timeout",
+   "ttc_lt4_frac": 0.017087667161961365,
+   "junction": 11
+  },
+  {
+   "episode": 49,
+   "route": "gyeongin_to_mapo",
+   "steps": 1679,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01786777843954735,
+   "junction": 40,
+   "lc_policy": 1,
+   "stop_queue": 1,
+   "stop_signal": 3
+  },
+  {
+   "episode": 50,
+   "route": "daebang_to_seogang",
+   "steps": 1970,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01015228426395939,
+   "junction": 31,
+   "lc_route": 2
+  },
+  {
+   "episode": 51,
+   "route": "seogang_to_gyeongin",
+   "steps": 2032,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01673228346456693,
+   "junction": 46,
+   "lc_route": 1,
+   "stop_signal": 2,
+   "lc_policy": 1
+  },
+  {
+   "episode": 52,
+   "route": "mapo_to_singil",
+   "steps": 1171,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.02305721605465414,
+   "junction": 27,
+   "stop_signal": 1
+  },
+  {
+   "episode": 53,
+   "route": "nodeul_to_dangsan",
+   "steps": 3617,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.014376555156206802,
+   "junction": 34,
+   "lc_policy": 4,
+   "lc_route": 3,
+   "stop_signal": 1,
+   "stop_queue": 7,
+   "stop_other": 1
+  },
+  {
+   "episode": 54,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1127,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.02040816326530612,
+   "junction": 39,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 55,
+   "route": "olympic_to_singil",
+   "steps": 2805,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0071301247771836,
+   "junction": 34,
+   "stop_signal": 3,
+   "lc_policy": 1,
+   "stop_queue": 1
+  },
+  {
+   "episode": 56,
+   "route": "gyeongin_to_mapo",
+   "steps": 2105,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.014251781472684086,
+   "junction": 40,
+   "stop_signal": 5,
+   "lc_route": 1,
+   "lc_policy": 1
+  },
+  {
+   "episode": 57,
+   "route": "daebang_to_seogang",
+   "steps": 1353,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.021433850702143386,
+   "junction": 31,
+   "lc_route": 2,
+   "lc_policy": 1
+  },
+  {
+   "episode": 58,
+   "route": "seogang_to_gyeongin",
+   "steps": 1262,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.009508716323296355,
+   "junction": 44,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 59,
+   "route": "mapo_to_singil",
+   "steps": 1344,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.002976190476190476,
+   "junction": 27,
+   "stop_signal": 2
+  },
+  {
+   "episode": 60,
+   "route": "nodeul_to_dangsan",
+   "steps": 2362,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.008044030482641828,
+   "junction": 52,
+   "lc_route": 5,
+   "stop_signal": 2
+  },
+  {
+   "episode": 61,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1068,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.0018726591760299626,
+   "junction": 36
+  },
+  {
+   "episode": 62,
+   "route": "olympic_to_singil",
+   "steps": 1342,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.011177347242921014,
+   "junction": 40,
+   "stop_signal": 3,
+   "lc_policy": 1,
+   "lc_route": 1
+  },
+  {
+   "episode": 63,
+   "route": "gyeongin_to_mapo",
+   "steps": 2104,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.01188212927756654,
+   "junction": 41,
+   "lc_route": 2,
+   "stop_signal": 2
+  },
+  {
+   "episode": 64,
+   "route": "daebang_to_seogang",
+   "steps": 1660,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.009036144578313253,
+   "junction": 31,
+   "lc_route": 3,
+   "stop_signal": 1
+  },
+  {
+   "episode": 65,
+   "route": "seogang_to_gyeongin",
+   "steps": 1362,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.023494860499265784,
+   "junction": 47,
+   "lc_route": 1,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 66,
+   "route": "mapo_to_singil",
+   "steps": 1228,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.005700325732899023,
+   "junction": 27,
+   "lc_policy": 2,
+   "stop_signal": 2
+  },
+  {
+   "episode": 67,
+   "route": "nodeul_to_dangsan",
+   "steps": 1891,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.004759386567953464,
+   "junction": 35,
+   "stop_signal": 3
+  },
+  {
+   "episode": 68,
+   "route": "dangsan_to_noryangjin",
+   "steps": 1136,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.017605633802816902,
+   "junction": 37,
+   "lc_policy": 1,
+   "stop_signal": 1
+  },
+  {
+   "episode": 69,
+   "route": "olympic_to_singil",
+   "steps": 991,
+   "outcome": "arrived",
+   "ttc_lt4_frac": 0.009081735620585268,
+   "junction": 40,
+   "stop_signal": 1,
+   "lc_route": 1,
+   "stop_queue": 1
+  }
+ ]
+}

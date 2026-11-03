@@ -142,6 +142,27 @@ PPO 최종의 충돌 3건 중 2건은 일반 차량이 교차로에서 AV를 들
 - 충돌률은 평가 기준 정의(충돌로 끝난 에피소드 비율)로, **AV가 일반 차량에 받힌 경우도 포함**한다.
 - 안전 필터(앞 장애물이 급정거해도 멈출 수 있는 속도로 제한)는 개입률 0.17 %이며, 필터를 꺼도 충돌률 3 %로 기준(≤5 %)을 만족한다.
 
+## 7-1. 차량 상호작용 정량 분석 (`tools/interaction_analysis.py`)
+
+최종 PPO 70 에피소드(`data/ydp_ppo_final.jsonl.gz`, privileged state)에서 측정. 에피소드 평균 4.3 km.
+
+| 항목 | 에피소드당 평균 |
+|---|---:|
+| 교차로 통과 | 39.2 |
+| 신호 정지 / 대기열(앞차) 정지 / 교차로 양보 정지 | 1.8 / 0.4 / 0.1 |
+| 차선변경 (경로 유지 / 정책 재량) | 1.4 / 0.9 |
+| 반경 50 m · 150 m 안 차량 (평균, 상위 10 %) | 7.3 (22) · 23.4 (60) |
+| 앞 장애물 TTC < 4 s 인 시간 | 1.14 % |
+
+주변 차량 구성: krauss 33.1 % · idm 24.8 % · eidm 21.3 % · acc 12.0 % · bus 5.8 % · truck 3.1 %.
+한계: 표본의 약 38 %는 반경 150 m 안 차량이 0~2대인 한산한 구간(올림픽대로·노들로 등)이다.
+
+![interaction](assets/figures/interaction_counts.png)
+![stops](assets/figures/interaction_stop_map.png)
+
+실패 사례(충돌·교착)의 유형·책임·위치는 `results/analysis/failures.md`(`tools/failure_analysis.py`):
+최종 평가들의 충돌은 모두 교차로 내부이며 다수가 일반 차량이 AV를 들이받은 경우, 직선 추돌·측면 충돌은 0건.
+
 ## 8. 데이터셋
 
 | 파일 | 정책 | 에피소드 | transitions | 내용 |
@@ -151,7 +172,7 @@ PPO 최종의 충돌 3건 중 2건은 일반 차량이 교차로에서 AV를 들
 | `expert_train.{jsonl.gz,npz}` | 전문가 (+가감속 잡음 σ=0.1) | 140 | 237,118 | PPO 초기화용 |
 
 위 데이터 파일은 모두 이 저장소 `data/`에 들어 있어요(총 약 210 MB). 학습 실행 폴더·평가 결과·세션 실험 로그는 `results/`
-(`results/session_logs/README.md` 참고). 컬럼 설명은 `docs/dataset_card.md`. **10^7 transition 목표**: 이 저장소 코드로
+(`results/session_logs/README.md` 참고). 컬럼 설명은 `docs/dataset_card.md`, **항목별 의미·단위·저장 구조·필요성은 `docs/data_dictionary.md`**. **10^7 transition 목표**: 이 저장소 코드로
 `python collect_pomdp_data.py --model results/final/model.pt --episodes 6000 --workers <코어 수> --no-jsonl --name ydp_ppo_bulk_02`
 (4코어 기준 약 300 step/s → 약 9시간, 16코어 약 2.5시간). 수집 후 `tools/upload_hf.py`로 업로드.
 
