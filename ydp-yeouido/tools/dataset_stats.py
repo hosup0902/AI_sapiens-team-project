@@ -24,6 +24,7 @@ def main():
     groups = {
         "ppo_single": [os.path.join(BASE, "data", f) for f in ("ydp_ppo_final.npz", "ydp_ppo_bulk_01.npz")],
         "ppo_multi": sorted(glob.glob(os.path.join(BASE, "data", "multi", "*.npz"))),
+        "ppo_multi_v2": sorted(glob.glob(os.path.join(BASE, "data", "multi_v2", "*.npz"))),
         "expert": [os.path.join(BASE, "data", "expert_train.npz")],
     }
     out, runs = {}, collections.defaultdict(lambda: collections.Counter())
@@ -31,6 +32,8 @@ def main():
         c = collections.Counter()
         route_steps = collections.Counter()
         nav_hist = collections.Counter()
+        longest = []                    # 에피소드별 최장 연속 정지(s)
+        stop_red, stop_other = 0, 0     # 정지 step: 적·황색 신호 앞 60 m 이내 / 그 외 (State 있는 파일만)
         for p in paths:
             if not os.path.exists(p):
                 continue
@@ -50,6 +53,17 @@ def main():
                     for v, k in zip(*np.unique(d["n_av"], return_counts=True)):
                         nav_hist[int(v)] += int(k)
                 sh = int(d["shield"].sum())
+                stopped = d["ego_speed"] < 0.1
+                starts = np.r_[0, np.flatnonzero(ep[1:] != ep[:-1]) + 1]
+                for a, b in zip(starts, np.r_[starts[1:], len(ep)]):
+                    x = np.r_[False, stopped[a:b], False].astype(np.int8)
+                    dx = np.diff(x)
+                    rl = np.flatnonzero(dx == -1) - np.flatnonzero(dx == 1)
+                    longest.append(0.5 * (rl.max() if len(rl) else 0))
+                if "state_tls_state" in d.files:
+                    red = (d["state_tls_state"] <= 0) & (d["state_tls_state"] > -2) & (d["state_tls_dist"] < 60)
+                    stop_red += int((stopped & red).sum())
+                    stop_other += int((stopped & ~red).sum())
             r = run_name(p)
             for cc in (c, runs[(g, r)]):
                 cc["files"] += 1
@@ -60,14 +74,25 @@ def main():
                 cc["stuck"] += int(stuck.sum())
                 cc["timeouts"] += int((trunc & ~coll & ~arr).sum())
                 cc["shield_steps"] += sh
+        for k in ("files", "transitions", "episodes", "collisions", "arrivals", "stuck", "timeouts", "shield_steps"):
+            c[k] += 0
         e = max(c["episodes"], 1)
         out[g] = {**c, "collision_rate": c["collisions"] / e, "arrival_rate": c["arrivals"] / e,
                   "stuck_rate": c["stuck"] / e, "shield_rate": c["shield_steps"] / max(c["transitions"], 1),
                   "route_transitions": dict(route_steps),
+                  **({"longest_stop_s": {"p50": float(np.percentile(longest, 50)), "p95": float(np.percentile(longest, 95)),
+                                         "p99": float(np.percentile(longest, 99)),
+                                         "episodes_gt_60s": float(np.mean(np.asarray(longest) > 60)),
+                                         "episodes_gt_120s": float(np.mean(np.asarray(longest) > 120))}} if longest else {}),
+                  **({"stopped_time_pct": 100 * (stop_red + stop_other) / max(c["transitions"], 1),
+                      "stopped_at_red_pct_of_stops": 100 * stop_red / max(stop_red + stop_other, 1)}
+                     if stop_red + stop_other else {}),
                   **({"n_av_hist": {str(k): v for k, v in sorted(nav_hist.items())}} if nav_hist else {})}
-    ppo = out["ppo_single"]["transitions"] + out["ppo_multi"]["transitions"]
+    ppo = out["ppo_single"]["transitions"] + out["ppo_multi"]["transitions"] + out["ppo_multi_v2"]["transitions"]
     out["total"] = {"ppo_transitions": ppo, "all_transitions": ppo + out["expert"]["transitions"],
-                    "ppo_episodes": out["ppo_single"]["episodes"] + out["ppo_multi"]["episodes"],
+                    "ppo_episodes": out["ppo_single"]["episodes"] + out["ppo_multi"]["episodes"] + out["ppo_multi_v2"]["episodes"],
+                    "v2_transitions": out["ppo_multi_v2"]["transitions"],
+                    "goal_1e7_v2_full_columns": out["ppo_multi_v2"]["transitions"] >= 10_000_000,
                     "goal_1e7_reached": ppo >= 10_000_000}
     out["runs"] = {f"{g}/{r}": dict(c) for (g, r), c in sorted(runs.items())}
     p = os.path.join(BASE, "results", "analysis", "dataset_stats.json")
@@ -77,7 +102,8 @@ def main():
     for g in groups:
         c = out[g]
         print(f"{g:12s} {c['files']:5d} {c['transitions']:12,d} {c['episodes']:8,d} "
-              f"{c['collision_rate']:6.2%} {c['arrival_rate']:7.2%} {c['stuck_rate']:6.2%}")
+              f"{c['collision_rate']:6.2%} {c['arrival_rate']:7.2%} {c['stuck_rate']:6.2%} "
+              f"최장정지 p95 {c.get('longest_stop_s', {}).get('p95', 0):.0f}s")
     print("PPO 합계", f"{ppo:,}", "· 10^7 달성" if ppo >= 10_000_000 else "· 10^7 미달")
     print("저장:", p)
 

@@ -181,6 +181,11 @@ Promise.resolve(JSON.parse(document.getElementById("results-data").textContent))
   if (d.links) {
     if (d.links.slides) document.getElementById("link-slides").href = d.links.slides;
     if (d.links.hf) document.getElementById("link-hf").href = d.links.hf;
+    else {  // HuggingFace 업로드 전에는 저장소의 data/ 폴더로
+      const h = document.getElementById("link-hf");
+      h.href = "https://github.com/hosup0902/AI_sapiens-team-project/tree/main/ydp-yeouido/data";
+      h.textContent = "데이터 (GitHub · HF 업로드 예정)";
+    }
   }
   const et = document.getElementById("eval-table");
   for (const p of d.policies) {

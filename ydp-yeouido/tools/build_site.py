@@ -23,7 +23,9 @@ def main():
     ap.add_argument("--policies", nargs="+", required=True, help='"표시이름=eval.json"')
     ap.add_argument("--videos", nargs="*", default=[])
     ap.add_argument("--hf", default=None)
-    ap.add_argument("--slides", default=None)
+    ap.add_argument("--slides", default="https://github.com/hosup0902/AI_sapiens-team-project/blob/main/ydp-yeouido/docs/final/"
+                    "%EC%B5%9C%EC%A2%85%EB%B0%9C%ED%91%9C_AI_sapiens.pdf",
+                    help="발표자료 PDF 링크 (기본: 저장소의 docs/final/최종발표_AI_sapiens.pdf, 구글 드라이브 링크로 바꿔도 됨)")
     ap.add_argument("--train-html", default="")
     ap.add_argument("--data-html", default="")
     a = ap.parse_args()

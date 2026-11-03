@@ -17,8 +17,16 @@ AV끼리: 교차로 장애물 인식(sumo_env._ignore_blocker)에서 먼저 투�
   - 서로 무시하면 교차로에서 AV끼리 충돌했다(시험: 충돌 다수).
   - 투입 순서 우선권은 대기 순환이 생길 수 없어 둘 다 해결 (시험: 29 에피소드 충돌 0, 교착 2).
 
-출력: data/<name>_w<k>_p<j>.npz (50만 transition마다 한 파일, collect_pomdp_data.py NPZ와 같은 키 +
-n_av = 그 스텝에 시뮬레이션에 있던 AV 수)
+출력: <out-dir>/<name>_w<k>_p<j>.npz (part-size transition마다 한 파일). 키:
+  - collect_pomdp_data.py NPZ 기본 키 (observation, action_raw, lane_change, reward, next_observation,
+    terminated, truncated, episode, t, detected_xy, detected_offsets) + route/충돌/도착/ego_xy/ego_speed/shield/n_av
+  - 수업 기본 JSONL 항목을 배열로 (v2, 2026-11-03~): action_accel_raw, action_lane_change_raw,
+    lane_change_applied, lane_before, lane_after, stuck
+  - State s_t 절대 정보 (state_*): sim_time, accel, angle, lane, lane_pos, edge(→edge_names),
+    speed_limit, route_progress_m, tls_dist/state/remain (+ route_lengths_m)
+  - 감지 차량 상세 (detected_offsets 정렬): detected_speed, detected_rel_pos, detected_lane_offset,
+    detected_type(→vtype_names)
+  s_{t+1}은 같은 에피소드의 다음 행(마지막 step은 terminated/truncated로 끝남)이다.
 """
 import argparse
 import copy
@@ -62,17 +70,38 @@ def worker(args, wid):
             if rname not in T.route.getIDList():
                 T.route.add(rname, base.routes[rid]["edges"])
 
-    B = {k: [] for k in ("obs", "nobs", "act", "lane", "rew", "term", "trunc", "ep", "t",
-                         "route", "coll", "arr", "xy", "spd", "shield", "nav")}
+    KEYS = ("obs", "nobs", "act", "lane", "rew", "term", "trunc", "t", "coll", "arr", "xy", "spd", "shield", "nav",
+            "st", "araw", "lraw", "lapp", "lbef", "laft", "stuck")
+    B = {k: [] for k in KEYS + ("ep", "route")}
     det_xy, det_off, det_n = [], [0], 0      # det_xy: 스텝별 (k,2) float32 배열 목록
+    det_ex = []                              # 스텝별 (k,4) [speed, rel_pos, lane_offset, type]
+    edges, vtypes = {}, {}                   # 이름 → 인덱스 (워커 전체 누적, 파일마다 전체 목록 저장)
+    route_len = np.asarray([base.route_len[r] for r in route_ids], np.float32)
+
+    def idx(d, k):
+        if k not in d:
+            d[k] = len(d)
+        return d[k]
+
+    def ego_state(ag):
+        """State s_t 절대 정보 (get_privileged_state의 ego 부분과 같은 값).
+        위경도는 용량 때문에 저장하지 않는다: ego_xy → sumolib net.convertXY2LonLat(x, y) 로 정확히 복원."""
+        v = ag.ego_id
+        tls = ag._tls_info()
+        return (T.simulation.getTime(), T.vehicle.getAcceleration(v), T.vehicle.getAngle(v),
+                T.vehicle.getLaneIndex(v), T.vehicle.getLanePosition(v), idx(edges, T.vehicle.getRoadID(v)),
+                T.vehicle.getAllowedSpeed(v), T.vehicle.getDistance(v),
+                *((tls[0], tls[1], tls[2]) if tls else (np.nan, -2, np.nan)))
     part, total, saved_upto = 0, 0, 0
     stats = {"episodes": 0, "collisions": 0, "arrivals": 0, "stuck": 0}
 
     def flush(final=False):
-        nonlocal part, B, det_xy, det_off, det_n, saved_upto
+        nonlocal part, B, det_xy, det_off, det_n, det_ex, saved_upto
         n = len(B["rew"])
         if n == 0:
             return
+        S = np.asarray(B["st"], np.float64).reshape(-1, 11)
+        DX = np.concatenate(det_ex) if det_ex else np.zeros((0, 4), np.float32)
         path = os.path.join(args.out_dir, f"{args.name}_w{wid}_p{part:02d}.npz")
         np.savez_compressed(
             path,
@@ -86,12 +115,24 @@ def worker(args, wid):
             route_index=np.asarray(B["route"], np.int8), route_names=np.asarray(route_ids),
             collided=np.asarray(B["coll"], np.bool_), arrived=np.asarray(B["arr"], np.bool_),
             ego_xy=np.asarray(B["xy"], np.float32).reshape(-1, 2), ego_speed=np.asarray(B["spd"], np.float32),
-            shield=np.asarray(B["shield"], np.bool_), n_av=np.asarray(B["nav"], np.int8))
+            shield=np.asarray(B["shield"], np.bool_), n_av=np.asarray(B["nav"], np.int8),
+            action_accel_raw=np.asarray(B["araw"], np.float32), action_lane_change_raw=np.asarray(B["lraw"], np.float32),
+            lane_change_applied=np.asarray(B["lapp"], np.bool_), lane_before=np.asarray(B["lbef"], np.int8),
+            lane_after=np.asarray(B["laft"], np.int8), stuck=np.asarray(B["stuck"], np.bool_),
+            state_sim_time=S[:, 0].astype(np.float32),
+            state_accel=S[:, 1].astype(np.float32), state_angle=S[:, 2].astype(np.float32),
+            state_lane=S[:, 3].astype(np.int8), state_lane_pos=S[:, 4].astype(np.float32),
+            state_edge=S[:, 5].astype(np.int32), state_speed_limit=S[:, 6].astype(np.float32),
+            state_route_progress_m=S[:, 7].astype(np.float32), state_tls_dist=S[:, 8].astype(np.float32),
+            state_tls_state=S[:, 9].astype(np.int8), state_tls_remain=S[:, 10].astype(np.float32),
+            route_lengths_m=route_len, edge_names=np.asarray(list(edges)), vtype_names=np.asarray(list(vtypes)),
+            detected_speed=DX[:, 0].astype(np.float16), detected_rel_pos=DX[:, 1].astype(np.float16),
+            detected_lane_offset=DX[:, 2].astype(np.int8), detected_type=DX[:, 3].astype(np.int8))
         print(f"[w{wid}] 저장 {path} ({n} transitions, 누적 {total})", flush=True)
         part += 1
         saved_upto = total
         B = {k: [] for k in B}
-        det_xy, det_off, det_n = [], [0], 0
+        det_xy, det_off, det_n, det_ex = [], [0], 0, []
 
     # 에피소드 버퍼: 끝까지 간 에피소드만 B에 넣는다 (파일 경계에서 에피소드가 잘리지 않게)
     slots = [None] * args.agents          # 각 자리: dict(env, state, ...)
@@ -133,7 +174,7 @@ def worker(args, wid):
             # (3) 결과
             for s, a, det, pre in pres:
                 ag = s["env"]
-                xy, spd = s["xy"], s["spd"]
+                xy, spd, st = s["xy"], s["spd"], s["st"]
                 nobs, r, term, trunc, inf = ag.observe_step(pre)
                 bf = s["buf"]
                 bf["obs"].append(s["obs"]); bf["nobs"].append(nobs); bf["act"].append(a)
@@ -142,10 +183,18 @@ def worker(args, wid):
                 bf["coll"].append(bool(inf["collided"])); bf["arr"].append(bool(inf["arrived"]))
                 bf["xy"].append(xy); bf["spd"].append(spd); bf["shield"].append(bool(inf["shield"]))
                 bf["nav"].append(nav); bf["det"].append(np.asarray([(d["x"], d["y"]) for d in det], np.float32).reshape(-1, 2))
+                bf["dex"].append(np.asarray([(d["speed"], d["rel_pos"], d["lane_offset"], idx(vtypes, d["type"]))
+                                             for d in det], np.float32).reshape(-1, 4))
+                bf["st"].append(st); bf["araw"].append(float(inf["accel_raw"])); bf["lraw"].append(float(inf["lane_change_raw"]))
+                bf["lapp"].append(bool(inf["lane_change_applied"]))
+                bf["lbef"].append(-1 if inf["lane_before"] is None else int(inf["lane_before"]))
+                bf["laft"].append(-1 if inf["lane_after"] is None else int(inf["lane_after"]))
+                bf["stuck"].append(bool(inf["stuck"]))
                 if ag.ego_id in T.vehicle.getIDList():
                     ag._last_edge = T.vehicle.getRoadID(ag.ego_id)
                     s["xy"] = T.vehicle.getPosition(ag.ego_id)
                     s["spd"] = T.vehicle.getSpeed(ag.ego_id)
+                    s["st"] = ego_state(ag)
                 s["obs"] = nobs
                 if args.debug and ag._stopped == 200 and ag.ego_id in T.vehicle.getIDList():
                     L = T.vehicle.getLeader(ag.ego_id, 80)
@@ -172,9 +221,9 @@ def worker(args, wid):
                           f"50m내 {len(near)}대 중 정지 {stopped} · a_raw={a[0]:.2f}", flush=True)
                 if term or trunc:
                     n = len(bf["rew"])
-                    for k in ("obs", "nobs", "act", "lane", "rew", "term", "trunc", "t", "coll", "arr",
-                              "xy", "spd", "shield", "nav"):
+                    for k in KEYS:
                         B[k].extend(bf[k])
+                    det_ex.extend(bf["dex"])
                     B["ep"].extend([s["ep"]] * n)
                     B["route"].extend([route_ids.index(ag.route_id)] * n)
                     for pts in bf["det"]:
@@ -207,8 +256,8 @@ def worker(args, wid):
                     s["obs"] = ag._get_obs()
                     s["xy"] = T.vehicle.getPosition(ag.ego_id)
                     s["spd"] = T.vehicle.getSpeed(ag.ego_id)
-                    s["buf"] = {k: [] for k in ("obs", "nobs", "act", "lane", "rew", "term", "trunc", "t",
-                                                "coll", "arr", "xy", "spd", "shield", "nav", "det")}
+                    s["st"] = ego_state(ag)
+                    s["buf"] = {k: [] for k in KEYS + ("det", "dex")}
                 else:
                     s["pending"] += 1
                     if s["pending"] > 120:

@@ -298,15 +298,34 @@
  "data": {
   "ppo_single": 834120,
   "ppo_single_eps": 490,
-  "ppo_multi": 7620265,
-  "ppo_multi_eps": 4747,
+  "ppo_multi": 8222925,
+  "ppo_multi_eps": 5100,
+  "ppo_v2": 0,
+  "ppo_v2_eps": 0,
+  "v2_files": 0,
   "expert": 237118,
-  "total": 8691503,
-  "ppo_total": 8454385,
-  "multi_files": 39,
-  "multi_collision_rate": 0.008426374552348851,
-  "multi_arrival_rate": 0.9580787866020645,
-  "multi_stuck_rate": 0.011796924373288392
+  "total": 9294163,
+  "ppo_total": 9057045,
+  "multi_files": 42,
+  "multi_collision_rate": 0.00823529411764706,
+  "multi_arrival_rate": 0.9570588235294117,
+  "multi_stuck_rate": 0.011372549019607842,
+  "longest_stop_s": {
+   "p50": 60.5,
+   "p95": 173.0250000000001,
+   "p99": 239.5,
+   "episodes_gt_60s": 0.505686274509804,
+   "episodes_gt_120s": 0.08254901960784314
+  },
+  "expert_longest_stop_s": {
+   "p50": 55.0,
+   "p95": 135.04999999999998,
+   "p99": 160.45499999999976,
+   "episodes_gt_60s": 0.45,
+   "episodes_gt_120s": 0.07142857142857142
+  },
+  "stopped_time_pct": null,
+  "stopped_at_red_pct_of_stops": null
  },
  "interaction": {
   "mean_per_episode": {

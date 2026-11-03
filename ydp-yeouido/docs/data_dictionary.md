@@ -18,19 +18,19 @@
 | `t` | int | step | 에피소드 안 순번 (0부터) | 시간 순서 복원, 시계열 모델 입력 | `t` |
 | `observation` | float[44] | 정규화 [-1,1] | 정책이 실제로 받은 부분 관측 o_t (아래 3절) | BC·오프라인 RL의 입력 그대로 | `observation` |
 | `action_raw` | float[2] | [-1,1] | 정책 출력 [가감속, 차선변경] | 모방 대상 행동 | `action_raw` |
-| `action.accel_raw` | float | [-1,1] | 가감속 명령. +1 = +3.0 m/s², −1 = −6.0 m/s² | 연속 제어량 복원 | (action_raw[0]) |
-| `action.lane_change_raw` | float | [-1,1] | 차선 명령 원시값 | 이산화 전 정책 출력 분석 | (action_raw[1]) |
+| `action.accel_raw` | float | [-1,1] | 가감속 명령. +1 = +3.0 m/s², −1 = −6.0 m/s² | 연속 제어량 복원 | `action_accel_raw` (v2) |
+| `action.lane_change_raw` | float | [-1,1] | 차선 명령 원시값 | 이산화 전 정책 출력 분석 | `action_lane_change_raw` (v2) |
 | `action.lane_change` | int | {−1,0,+1} | 이산화된 명령 (오른쪽/유지/왼쪽, 문턱 ±0.5) | 실제 의도한 차선 행동 | `lane_change` |
-| `action.lane_change_applied` | bool | – | 측면 안전·경로 게이트를 통과해 실제 실행됐는지 | 명령과 결과 구분 (거부된 변경 학습 방지) | – |
+| `action.lane_change_applied` | bool | – | 측면 안전·경로 게이트를 통과해 실제 실행됐는지 | 명령과 결과 구분 (거부된 변경 학습 방지) | `lane_change_applied` (v2) |
 | `reward` | float | – | r_t (env/mdp_config.py REWARD) | 오프라인 RL·리턴 분석 | `reward` |
 | `terminated` | bool | – | 충돌·도착·교착(텔레포트) 종료 | 부트스트랩 중단 지점 | `terminated` |
 | `truncated` | bool | – | 시간 제한(4,800 step = 40분) 또는 240 s 정지 교착 | 시간 제한 종료와 실패 종료 구분 | `truncated` |
 | `next_observation` | float[44] | [-1,1] | o_{t+1} | TD 학습 타깃 | `next_observation` |
-| `state` | dict | – | 정책이 보지 않는 시뮬레이터 상태 s_t (2절) | belief·표현 학습, 데이터 검증, 시각화 | `ego_xy`, `ego_speed` |
-| `next_state` | dict | – | s_{t+1} | 상태 전이 모델 | – |
-| `detected_vehicles` | list | – | 관측 시야(±80 m, 5개 차선) 안 차량: `id, x, y (m), rel_pos (m, 앞 +), speed (m/s), lane_offset (+왼쪽), type` | 관측이 무엇을 보고 만들어졌는지 추적 | `detected_xy`, `detected_offsets` |
+| `state` | dict | – | 정책이 보지 않는 시뮬레이터 상태 s_t (2절) | belief·표현 학습, 데이터 검증, 시각화 | `ego_xy`, `ego_speed`, `state_*` (v2) |
+| `next_state` | dict | – | s_{t+1} | 상태 전이 모델 | 같은 에피소드의 다음 행 |
+| `detected_vehicles` | list | – | 관측 시야(±80 m, 5개 차선) 안 차량: `id, x, y (m), rel_pos (m, 앞 +), speed (m/s), lane_offset (+왼쪽), type` | 관측이 무엇을 보고 만들어졌는지 추적 | `detected_xy`, `detected_offsets` + `detected_speed/rel_pos/lane_offset/type` (v2) |
 | `event.collided` / `event.arrived` | bool | – | 이번 step에 충돌 / 목적지 도착 | 성공·실패 라벨 | `collided`, `arrived` |
-| `event.lane_before` / `event.lane_after` | int | 차선 번호 (0=맨 오른쪽) | 행동 전후 차선 | 차선 변경 결과 확인 | – |
+| `event.lane_before` / `event.lane_after` | int | 차선 번호 (0=맨 오른쪽) | 행동 전후 차선 | 차선 변경 결과 확인 | `lane_before`, `lane_after` (v2) |
 
 ## 2. state — 절대 정보 (평가 기준 필수)
 
@@ -88,6 +88,38 @@ W = 80 m (시야), vmax = 22.22 m/s, 차선 블록 순서 k = 0..4 → (좌2, �
 | `shield` | bool[N] | 안전 필터가 속도를 제한한 step |
 | `n_av` | int8[N] | (다중 AV 수집만) 그 step에 시뮬레이션에 있던 AV 수 |
 
+### 4-1. v2 NPZ (`data/multi_v2/`, 2026-11-03~) — 수업 기본 항목 + State를 전부 배열로
+
+v1(`data/multi/`, `data/ydp_ppo_bulk_*.npz`)은 수업 `collect_pomdp_data.py` NPZ와 같은 키만 담는다.
+v2는 수업 JSONL의 모든 기본 항목과 State 절대 정보를 transition마다 배열로 저장한다 (`tools/collect_multi.py`).
+s_{t+1}(`next_state`)은 같은 `episode`의 다음 행이다(마지막 행은 `terminated`/`truncated`로 끝남).
+
+| 키 | 형태 | 단위 | 의미 (수업 항목 대응) |
+|---|---|---|---|
+| `action_accel_raw`, `action_lane_change_raw` | float32[N] | [-1,1] | `action.accel_raw`, `action.lane_change_raw` |
+| `lane_change_applied` | bool[N] | – | `action.lane_change_applied` |
+| `lane_before`, `lane_after` | int8[N] | 차선 번호 (−1 = 도로 밖) | `event.lane_before`, `event.lane_after` |
+| `stuck` | bool[N] | – | 240 s 정지 교착 종료 |
+| `state_sim_time` | float32[N] | s | 시뮬레이션 시각 |
+| `state_accel` | float32[N] | m/s² | ego 가속도 |
+| `state_angle` | float32[N] | deg | 진행 방향 (북 0°, 시계 방향) |
+| `state_lane`, `state_lane_pos` | int8[N], float32[N] | 번호, m | 차선, 차선 시작점부터 거리 |
+| `state_edge` + `edge_names` | int32[N] + str[E] | – | 도로 id (`edge_names[state_edge]`, `:`로 시작하면 교차로 내부) |
+| `state_speed_limit` | float32[N] | m/s | 현재 차선 제한속도 |
+| `state_route_progress_m` + `route_lengths_m` | float32[N] + float32[7] | m | 출발 후 주행 거리 / 경로 길이 (`route_index`로 선택) |
+| `state_tls_dist`, `state_tls_state`, `state_tls_remain` | float32, int8, float32 | m, {+1 녹, 0 황, −1 적, −2 없음}, s | 다음 신호까지 거리·상태·남은 시간 |
+| `detected_speed`, `detected_rel_pos` | float16[M] | m/s, m | 감지 차량 속도, 차선 방향 상대 위치 (`detected_offsets`로 step 정렬) |
+| `detected_lane_offset` | int8[M] | 차선 (+왼쪽) | 감지 차량의 상대 차선 |
+| `detected_type` + `vtype_names` | int8[M] + str[K] | – | 감지 차량 종류 (`hv_*` 컨트롤러, `ego_type` = 다른 AV) |
+
+경위도는 용량 때문에 v2 배열에 넣지 않았다. `ego_xy`에서 정확히 복원된다:
+
+```python
+import sumolib
+net = sumolib.net.readNet("env/sumo/ydp.net.xml")   # 저장소의 네트워크 파일
+lon, lat = net.convertXY2LonLat(x, y)
+```
+
 ## 5. 수집 조건
 
 | 항목 | 값 |
@@ -97,4 +129,4 @@ W = 80 m (시야), vmax = 22.22 m/s, 차선 블록 순서 k = 0..4 → (좌2, �
 | 시작 상태 | 교통이 찬 스냅샷 (900~3300 s) |
 | 정책 | 최종 PPO (`results/final/model.pt`), 결정적 행동, 안전 필터 ON |
 | 과제 | 7개 OD 경로 순환 (3.5~4.9 km) |
-| 다중 AV 수집 | 시뮬레이션 하나에 AV 12대 (HV 1,000여 대 중 1 % 내외), 다른 AV는 교차로 장애물 인식에서 제외 |
+| 다중 AV 수집 | 시뮬레이션 하나에 AV 12대 (HV 1,000여 대 중 1 % 내외). AV끼리는 먼저 투입된 AV가 교차로 우선권 (`sumo_env._ignore_blocker`) |

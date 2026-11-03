@@ -41,15 +41,21 @@ def multi_stats():
     p = os.path.join(R, "analysis", "dataset_stats.json")
     if not os.path.exists(p):
         return {}
-    m = json.load(open(p, encoding="utf-8"))["ppo_multi"]
-    return {"multi_collision_rate": m["collision_rate"], "multi_arrival_rate": m["arrival_rate"],
-            "multi_stuck_rate": m["stuck_rate"]}
+    d = json.load(open(p, encoding="utf-8"))
+    m, v2 = d["ppo_multi"], d.get("ppo_multi_v2", {})
+    src = v2 if v2.get("episodes") else m
+    return {"multi_collision_rate": src["collision_rate"], "multi_arrival_rate": src["arrival_rate"],
+            "multi_stuck_rate": src["stuck_rate"], "longest_stop_s": src.get("longest_stop_s"),
+            "expert_longest_stop_s": d["expert"].get("longest_stop_s"),
+            "stopped_time_pct": v2.get("stopped_time_pct"), "stopped_at_red_pct_of_stops": v2.get("stopped_at_red_pct_of_stops")}
 
 
 def main():
     data = os.path.join(BASE, "data")
     ppo_single = [os.path.join(data, f) for f in ("ydp_ppo_final.npz", "ydp_ppo_bulk_01.npz")]
     multi = sorted(glob.glob(os.path.join(data, "multi", "*.npz")))
+    v2 = sorted(glob.glob(os.path.join(data, "multi_v2", "*.npz")))
+    n_v2, e_v2 = count(v2)
     n_single, e_single = count([p for p in ppo_single if os.path.exists(p)])
     n_multi, e_multi = count(multi)
     n_exp, e_exp = count([os.path.join(data, "expert_train.npz")])
@@ -59,7 +65,8 @@ def main():
             "ppo": "eval_ppo.json", "ppo_noshield": "eval_ppo_noshield.json", "ppo_fixed": "eval_ppo_fixed.json",
             "bc": "eval_bc.json", "td3bc": "eval_td3bc.json", "expert": "eval_expert.json"}.items()},
         "data": {"ppo_single": n_single, "ppo_single_eps": e_single, "ppo_multi": n_multi, "ppo_multi_eps": e_multi,
-                 "expert": n_exp, "total": n_single + n_multi + n_exp, "ppo_total": n_single + n_multi,
+                 "ppo_v2": n_v2, "ppo_v2_eps": e_v2, "v2_files": len(v2),
+                 "expert": n_exp, "total": n_single + n_multi + n_v2 + n_exp, "ppo_total": n_single + n_multi + n_v2,
                  "multi_files": len(multi), **multi_stats()},
         "interaction": {k: inter[k] for k in ("mean_per_episode", "ttc_lt4_pct_of_time", "vehicles_within_50m",
                                               "vehicles_within_150m", "nearby_vehicle_types_pct")},

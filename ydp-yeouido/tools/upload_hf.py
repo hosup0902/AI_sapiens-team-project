@@ -2,7 +2,10 @@
 
     pip install huggingface_hub
     huggingface-cli login                      # 또는 환경변수 HF_TOKEN
-    python tools/upload_hf.py --repo <사용자명>/ydp-yeouido-av --files data/pomdp_*.npz data/pomdp_*.jsonl.gz
+    python tools/upload_hf.py --repo <사용자명>/ydp-yeouido-av \
+        --files "data/*.npz" "data/*.jsonl.gz" "data/multi/*.npz" "data/multi_v2/*.npz"
+
+저장소 안 경로(data/multi_v2/... 등)를 그대로 유지하고, 파일 수가 많아도 한 번의 커밋으로 올린다.
 
 데이터 카드(README.md)는 docs/dataset_card.md 를 그대로 올린다.
 큰 파일은 huggingface_hub 가 자동으로 LFS/xet 업로드한다.
@@ -27,10 +30,13 @@ def main():
     if os.path.exists(card):
         api.upload_file(path_or_fileobj=card, path_in_repo="README.md", repo_id=a.repo, repo_type="dataset")
     files = sorted({f for pat in a.files for f in glob.glob(pat)})
-    for f in files:
-        print(f"업로드: {f} ({os.path.getsize(f) / 2 ** 20:.1f} MB)")
-        api.upload_file(path_or_fileobj=f, path_in_repo=f"data/{os.path.basename(f)}",
-                        repo_id=a.repo, repo_type="dataset")
+    from huggingface_hub import CommitOperationAdd
+    ops = [CommitOperationAdd(path_in_repo=os.path.relpath(os.path.abspath(f), BASE).replace(os.sep, "/"),
+                              path_or_fileobj=f) for f in files]
+    for i in range(0, len(ops), 50):         # 50개씩 커밋 (큰 커밋 실패 시 재시도 단위를 작게)
+        api.create_commit(repo_id=a.repo, repo_type="dataset", operations=ops[i:i + 50],
+                          commit_message=f"Add data files {i + 1}-{min(i + 50, len(ops))}")
+        print(f"  {min(i + 50, len(ops))}/{len(ops)} 업로드")
     print(f"완료 → https://huggingface.co/datasets/{a.repo}")
 
 

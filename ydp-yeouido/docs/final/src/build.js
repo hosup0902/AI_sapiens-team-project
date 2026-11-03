@@ -283,9 +283,10 @@ async function icon(Comp, color, size = 256) {
   tx(s, (DT.total / 1e6).toFixed(2) + "M", { x: 0.85, y: 1.75, w: 4.1, h: 1.2, fontSize: 54, bold: true, color: C.background1 });
   tx(s, "transition 합계", { x: 0.85, y: 2.95, w: 4.1, h: 0.4, fontSize: 15, color: "C9D3E3" });
   tx(s, [{ text: `PPO 전체 컬럼(JSONL) ${num(123356)}`, options: { breakLine: true } },
-         { text: `PPO 학습용(NPZ) ${num(DT.ppo_total - 123356)}`, options: { breakLine: true } },
+         ...(DT.ppo_v2 ? [{ text: `PPO NPZ v2 (수업 항목+State 전부) ${num(DT.ppo_v2)}`, options: { breakLine: true } }] : []),
+         { text: `PPO NPZ v1 (수업 NPZ 기본 키) ${num(DT.ppo_single + DT.ppo_multi - 123356)}`, options: { breakLine: true } },
          { text: `전문가(초기화용) ${num(DT.expert)}` }], { x: 0.85, y: 3.55, w: 4.1, h: 1.4, fontSize: 13, color: "C9D3E3", valign: "top", paraSpaceAfter: 4 });
-  tx(s, (DT.ppo_total >= 1e7 ? `PPO 정책 데이터 ${(DT.ppo_total / 1e6).toFixed(2)}M → 10⁷ 달성. ` : "") + "다중 AV 수집: 시뮬레이션 하나에 AV 12대 → SUMO 비용을 나눠 약 2배 빠르게", { x: 0.85, y: 5.0, w: 4.1, h: 0.9, fontSize: 12, color: "FF8A99", valign: "top" });
+  tx(s, (DT.ppo_v2 >= 1e7 ? `State 포함 v2만 ${(DT.ppo_v2 / 1e6).toFixed(2)}M → 10⁷ 달성. ` : (DT.ppo_total >= 1e7 ? `PPO 정책 데이터 ${(DT.ppo_total / 1e6).toFixed(2)}M → 10⁷ 달성. ` : "")) + "다중 AV 수집: 시뮬레이션 하나에 AV 12대 → SUMO 비용을 나눠 약 2배 빠르게", { x: 0.85, y: 5.0, w: 4.1, h: 0.9, fontSize: 12, color: "FF8A99", valign: "top" });
   [[I.db, C.accent2, "수업 필수", "episode · t · observation(44) · action_raw · lane_change · reward · terminated · truncated · next_observation · detected_vehicles"],
    [I.pin, C.accent1, "State 절대 정보", "AV 위치(m)·경위도·속도·가속도·방향·차선·도로명·제한속도·경로 진행·다음 신호, 반경 150 m 차량"],
    [I.plus, C.accent4, "도시 확장", "route · 충돌/도착/교착 · 안전필터 개입 · 진행률 · 다중 AV 수(n_av)"]].forEach(([ic, col, h, b], i) => {
@@ -295,7 +296,35 @@ async function icon(Comp, color, size = 256) {
     tx(s, h, { x: 6.55, y: y + 0.1, w: 5.9, h: 0.4, fontSize: 15, bold: true, color: C.text1 });
     tx(s, b, { x: 6.55, y: y + 0.5, w: 5.95, h: 0.85, fontSize: 12, color: C.text2, valign: "top" });
   });
-  NOTES.push(`[약 45초] 데이터는 수업 수집 코드의 필수 항목을 그대로 두고, 절대 정보 State와 도시망 항목을 더했습니다. 각 항목의 의미, 단위, 왜 필요한지는 데이터 컬럼 사전 문서에 정리했습니다. 규모는 총 ${(DT.total / 1e6).toFixed(2)}백만 transition이고, 그중 최종 PPO 정책이 만든 데이터가 ${(DT.ppo_total / 1e6).toFixed(2)}백만으로 ${DT.ppo_total >= 1e7 ? "목표였던 10의 7승을 넘었습니다" : "목표 10의 7승에 근접했습니다"}. AV 한 대 환경은 시간의 75 %가 SUMO 계산이라 느려서, 시뮬레이션 하나에 AV 12대를 함께 넣어 비용을 나누는 수집기를 만들었고, AV끼리는 먼저 들어온 차에 우선권을 주는 규칙으로 서로 막히거나 부딪히지 않게 했습니다. 이 데이터의 에피소드 충돌률은 ${pct(DT.multi_collision_rate, 1)}입니다. 모든 데이터는 저장소에 올렸고 HuggingFace 업로드 스크립트도 준비했습니다.`);
+  NOTES.push(`[약 45초] 데이터는 수업 수집 코드의 필수 항목을 그대로 두고, 절대 정보 State와 도시망 항목을 더했습니다. 각 항목의 의미, 단위, 왜 필요한지는 데이터 컬럼 사전 문서에 정리했습니다. 규모는 총 ${(DT.total / 1e6).toFixed(2)}백만 transition이고, 그중 최종 PPO 정책이 만든 데이터가 ${(DT.ppo_total / 1e6).toFixed(2)}백만이고, 특히 수업 기본 항목과 절대 State를 전부 담은 v2 형식만으로 ${(DT.ppo_v2 / 1e6).toFixed(2)}백만${DT.ppo_v2 >= 1e7 ? "이라 10의 7승 기준을 넘었습니다" : "입니다"}. AV 한 대 환경은 시간의 75 %가 SUMO 계산이라 느려서, 시뮬레이션 하나에 AV 12대를 함께 넣어 비용을 나누는 수집기를 만들었고, AV끼리는 먼저 들어온 차에 우선권을 주는 규칙으로 서로 막히거나 부딪히지 않게 했습니다. 이 데이터의 에피소드 충돌률은 ${pct(DT.multi_collision_rate, 1)}입니다. 모든 데이터는 저장소에 올렸고 HuggingFace 업로드 스크립트도 준비했습니다.`);
+
+  // 13-2. 데이터 항목 설계 · 수집 조건 ───────────────
+  s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "데이터" });
+  s.addText("데이터 항목: 의미 · 단위 · 저장 구조 · 수집 조건", { placeholder: "title" });
+  const cols = [["항목", "단위 / 형태", "왜 필요한가"],
+    ["observation · next_observation", "float32[44], [-1,1]", "정책 입력 o_t / o_t+1 (BC·오프라인 RL 학습)"],
+    ["action_raw · accel_raw · lane_change(_applied)", "[-1,1] · {-1,0,1} · bool", "명령과 실제 적용 구분 (안전 게이트 효과 분석)"],
+    ["reward · terminated · truncated", "float · bool", "RL 학습, 충돌·도착(종료) vs 시간 제한 구분"],
+    ["ego_xy · state_edge · lane · lane_pos", "m (SUMO 좌표) · 도로 id · 차선 idx", "State 절대 위치 → 지도 위 재현, 위경도 복원"],
+    ["ego_speed · state_accel · angle · speed_limit", "m/s · m/s² · deg · m/s", "주행 품질·과속·급가감속 분석"],
+    ["state_tls_dist · state · remain", "m · {+1 녹, 0 황, −1 적} · s", "신호 대기와 비정상 정지를 구분"],
+    ["route_progress_m · route_lengths_m", "m", "완주 여부·잘못된 경로 이탈 확인"],
+    ["detected_xy · speed · rel_pos · type", "m · m/s · m · 차종 idx (offsets로 step 정렬)", "주변 HV 상호작용 (TTC·근접·혼합 차종)"],
+    ["n_av · collided · arrived · stuck · shield", "int · bool", "다중 AV 조건, 결과 이벤트, 필터 개입"]];
+  s.addTable(cols.map((r, i) => r.map((c, j) => ({ text: c, options: { bold: i === 0 || j === 0, color: HEX.dk1, fill: { color: i === 0 ? HEX.lt2 : "FFFFFF" }, fontSize: 11 } }))),
+    { x: 0.6, y: 1.4, w: 8.4, colW: [3.0, 2.45, 2.95], border: { type: "solid", pt: 0.75, color: "E1DDD3" }, rowH: 0.42, margin: 0.06 });
+  card(s, 9.25, 1.4, 3.45, 5.3, C.background2, "cond");
+  tx(s, "수집 조건", { x: 9.45, y: 1.55, w: 3.1, h: 0.4, fontSize: 15, bold: true, color: C.text1 });
+  tx(s, [
+    { text: "정책: 최종 PPO, 결정적 행동, 안전 필터 ON", options: { bullet: true, breakLine: true } },
+    { text: "교통: HV 7,200대/h, 60 s 재경로, 신호 107곳", options: { bullet: true, breakLine: true } },
+    { text: "시작: 교통이 찬 스냅샷 900~3,300 s", options: { bullet: true, breakLine: true } },
+    { text: "과제: 실제 OD 경로 7개를 번갈아 배정", options: { bullet: true, breakLine: true } },
+    { text: "시뮬레이션당 AV 12대, 0.5 s step", options: { bullet: true, breakLine: true } },
+    { text: "저장: 20만 transition마다 NPZ, s_t+1 = 같은 에피소드 다음 행", options: { bullet: true, breakLine: true } },
+    { text: `결과: 충돌 ${pct(DT.multi_collision_rate, 1)} · 도착 ${pct(DT.multi_arrival_rate, 1)} · 교착 ${pct(DT.multi_stuck_rate, 1)}`, options: { bullet: true } },
+  ], { x: 9.45, y: 2.0, w: 3.1, h: 4.5, fontSize: 12, color: C.text2, valign: "top", paraSpaceAfter: 6 });
+  NOTES.push(`[약 60초] 평가 기준의 데이터 항목 설계를 한 장으로 정리했습니다. 수업 수집 코드의 필수 항목인 관측, 행동, 보상, 종료, 다음 관측, 감지 차량은 그대로 두었고, 행동은 정책이 낸 값과 안전 게이트를 거쳐 실제 적용됐는지를 나눠 저장해서 필터 효과를 분석할 수 있게 했습니다. 절대 정보 State는 SUMO 좌표와 도로, 차선, 속도, 가속도, 방향, 제한속도, 다음 신호의 거리와 상태, 경로 진행 거리입니다. 신호 상태를 함께 저장했기 때문에 AV가 멈춘 이유가 적신호 대기인지 비정상 정지인지 데이터만으로 구분할 수 있고, 경로 진행 거리로 완주와 경로 이탈을 확인합니다. 수집 조건은 오른쪽과 같습니다. 최종 PPO를 결정적으로 돌렸고, 시간당 7,200대 교통이 찬 상태에서 7개 경로를 번갈아 달렸습니다. 이 조건에서 에피소드 충돌률은 ${pct(DT.multi_collision_rate, 1)}, 도착률은 ${pct(DT.multi_arrival_rate, 1)}입니다.`);
 
   // 14. 문제와 해결 ───────────────────────────
   pres.addSection({ title: "정리" });
@@ -313,18 +342,22 @@ async function icon(Comp, color, size = 256) {
   NOTES.push(`[약 60초] 문제를 해결한 과정입니다. 모두 측정하고, 원인을 찾고, 고친 뒤 다시 측정했습니다. 동적 재경로로 과포화를 풀었고, 고가 위 노드가 평면 교차로에 섞인 오류를 층 검사로 찾았습니다. AV가 교차로 안에 갇힌 차량과 부딪히는 문제는 SUMO의 교차로 감속이 안전거리 기능에 묶여 있어서였고, 기하 검사로 장애물을 인식하게 했습니다. PPO가 안전 필터에 기대는 문제는 필터 없이 다시 학습해서, 신호 대기 중 미세 전진 추돌은 오토홀드로 해결했습니다. 마지막으로 AV에도 동적 재경로가 걸려 설계 경로를 벗어날 수 있다는 점을 찾아, 경로를 고정한 평가를 따로 했습니다.`);
 
   // 15. 실패 분석 ─────────────────────────────
+  const LS = DT.longest_stop_s, LX = DT.expert_longest_stop_s;
+  const stopTxt = () => LS ? `에피소드별 최장 정지 중앙값 PPO ${Math.round(LS.p50)} s · 전문가 ${Math.round(LX.p50)} s (신호 주기 수준)` +
+    (DT.stopped_at_red_pct_of_stops ? ` · 정지의 ${Math.round(DT.stopped_at_red_pct_of_stops)} %가 적·황신호 앞` : "") : "–";
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "정리" });
   s.addText("남은 실패는 어디서, 왜 일어나는가", { placeholder: "title" });
   s.addImage({ path: IMG("stop_map.jpg"), x: 0.6, y: 1.4, w: 6.9, h: 4.89, altText: "AV 정지 위치와 원인 지도" });
   [["교차로 내부", "최종 평가의 충돌은 모두 교차로 안. 직선 추돌·차선변경 측면 충돌 0건"],
    ["피추돌이 다수", "일반 차량이 AV를 들이받은 경우가 과반 — HV끼리도 80분에 41~59건 나는 SUMO 교차로 모델 현상"],
-   ["교착 = 실제 정체", "영등포 로터리·서울교 북단 신호 대기열(28~80대)이 원인. AV는 대기열 중간에서 기다린 것"]].forEach(([h, b], i) => {
-    const y = 1.4 + i * 1.65;
-    card(s, 7.8, y, 4.9, 1.5, C.background2, `fa-${i}`);
-    tx(s, h, { x: 8.05, y: y + 0.12, w: 4.4, h: 0.4, fontSize: 16, bold: true, color: C.text1 });
-    tx(s, b, { x: 8.05, y: y + 0.55, w: 4.45, h: 0.9, fontSize: 12.5, color: C.text2, valign: "top" });
+   ["교착 = 실제 정체", "영등포 로터리·서울교 북단 신호 대기열(28~80대)이 원인. AV는 대기열 중간에서 기다린 것"],
+   ["정지 시간은 전문가와 비슷", stopTxt()]].forEach(([h, b], i) => {
+    const y = 1.4 + i * 1.25;
+    card(s, 7.8, y, 4.9, 1.15, C.background2, `fa-${i}`);
+    tx(s, h, { x: 8.05, y: y + 0.08, w: 4.4, h: 0.38, fontSize: 15, bold: true, color: C.text1 });
+    tx(s, b, { x: 8.05, y: y + 0.46, w: 4.45, h: 0.66, fontSize: 11.5, color: C.text2, valign: "top" });
   });
-  NOTES.push(`[약 40초] 남은 실패도 분석했습니다. 왼쪽은 AV가 멈춘 위치와 원인을 지도에 찍은 것입니다. 충돌은 모두 교차로 안에서 났고, 직선 구간 추돌이나 차선변경 측면 충돌은 한 건도 없었습니다. 충돌의 과반은 일반 차량이 AV를 들이받은 경우로, 일반 차량끼리도 생기는 SUMO 교차로 모델의 현상입니다. 교착은 대기열 맨 앞 차를 추적해 보니 영등포 로터리와 서울교 북단 신호의 실제 정체였습니다.`);
+  NOTES.push(`[약 55초] 남은 실패도 분석했습니다. 왼쪽은 AV가 멈춘 위치와 원인을 지도에 찍은 것입니다. 충돌은 모두 교차로 안에서 났고, 직선 구간 추돌이나 차선변경 측면 충돌은 한 건도 없었습니다. 충돌의 과반은 일반 차량이 AV를 들이받은 경우로, 일반 차량끼리도 생기는 SUMO 교차로 모델의 현상입니다. 교착은 대기열 맨 앞 차를 추적해 보니 영등포 로터리와 서울교 북단 신호의 실제 정체였습니다. 평가 기준의 비정상 정지도 데이터로 확인했습니다. 에피소드마다 가장 길게 멈춘 시간의 중앙값이 PPO ${LS ? Math.round(LS.p50) : "–"}초로 규칙 전문가의 ${LX ? Math.round(LX.p50) : "–"}초와 비슷한 신호 한 주기 수준${DT.stopped_at_red_pct_of_stops ? `이고, 멈춘 시간의 ${Math.round(DT.stopped_at_red_pct_of_stops)} %는 적신호나 황신호 앞이었습니다` : "입니다"}.`);
 
   // 16. 결론 ─────────────────────────────────
   s = pres.addSlide({ masterName: "SECTION_DARK", sectionTitle: "정리" });

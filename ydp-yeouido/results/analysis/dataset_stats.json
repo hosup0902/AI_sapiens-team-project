@@ -20,44 +20,73 @@
    "nodeul_to_dangsan": 158870,
    "dangsan_to_noryangjin": 91608,
    "olympic_to_singil": 97991
+  },
+  "longest_stop_s": {
+   "p50": 64.0,
+   "p95": 130.8749999999999,
+   "p99": 180.0,
+   "episodes_gt_60s": 0.6346938775510204,
+   "episodes_gt_120s": 0.05918367346938776
   }
  },
  "ppo_multi": {
-  "files": 39,
-  "transitions": 7620265,
-  "episodes": 4747,
-  "collisions": 40,
-  "arrivals": 4548,
-  "stuck": 56,
-  "timeouts": 142,
-  "shield_steps": 11969,
-  "collision_rate": 0.008426374552348851,
-  "arrival_rate": 0.9580787866020645,
-  "stuck_rate": 0.011796924373288392,
-  "shield_rate": 0.0015706802847407538,
+  "files": 42,
+  "transitions": 8222925,
+  "episodes": 5100,
+  "collisions": 42,
+  "arrivals": 4881,
+  "stuck": 58,
+  "timeouts": 160,
+  "shield_steps": 13434,
+  "collision_rate": 0.00823529411764706,
+  "arrival_rate": 0.9570588235294117,
+  "stuck_rate": 0.011372549019607842,
+  "shield_rate": 0.0016337252255128193,
   "route_transitions": {
-   "gyeongin_to_mapo": 1357158,
-   "daebang_to_seogang": 908953,
-   "seogang_to_gyeongin": 1115502,
-   "mapo_to_singil": 1000322,
-   "nodeul_to_dangsan": 1414862,
-   "dangsan_to_noryangjin": 788269,
-   "olympic_to_singil": 1035199
+   "gyeongin_to_mapo": 1470345,
+   "daebang_to_seogang": 980829,
+   "seogang_to_gyeongin": 1203002,
+   "mapo_to_singil": 1074153,
+   "nodeul_to_dangsan": 1534179,
+   "dangsan_to_noryangjin": 847154,
+   "olympic_to_singil": 1113263
+  },
+  "longest_stop_s": {
+   "p50": 60.5,
+   "p95": 173.0250000000001,
+   "p99": 239.5,
+   "episodes_gt_60s": 0.505686274509804,
+   "episodes_gt_120s": 0.08254901960784314
   },
   "n_av_hist": {
-   "1": 121198,
-   "2": 141856,
-   "3": 149727,
-   "4": 138435,
-   "5": 145144,
-   "6": 131946,
-   "7": 142390,
-   "8": 163024,
-   "9": 158031,
-   "10": 166635,
-   "11": 242027,
-   "12": 5919852
+   "1": 127813,
+   "2": 154028,
+   "3": 161625,
+   "4": 153591,
+   "5": 166824,
+   "6": 153012,
+   "7": 161644,
+   "8": 182419,
+   "9": 169307,
+   "10": 182058,
+   "11": 257164,
+   "12": 6353440
   }
+ },
+ "ppo_multi_v2": {
+  "files": 0,
+  "transitions": 0,
+  "episodes": 0,
+  "collisions": 0,
+  "arrivals": 0,
+  "stuck": 0,
+  "timeouts": 0,
+  "shield_steps": 0,
+  "collision_rate": 0.0,
+  "arrival_rate": 0.0,
+  "stuck_rate": 0.0,
+  "shield_rate": 0.0,
+  "route_transitions": {}
  },
  "expert": {
   "files": 1,
@@ -80,12 +109,21 @@
    "nodeul_to_dangsan": 44442,
    "dangsan_to_noryangjin": 25515,
    "olympic_to_singil": 28891
+  },
+  "longest_stop_s": {
+   "p50": 55.0,
+   "p95": 135.04999999999998,
+   "p99": 160.45499999999976,
+   "episodes_gt_60s": 0.45,
+   "episodes_gt_120s": 0.07142857142857142
   }
  },
  "total": {
-  "ppo_transitions": 8454385,
-  "all_transitions": 8691503,
-  "ppo_episodes": 5237,
+  "ppo_transitions": 9057045,
+  "all_transitions": 9294163,
+  "ppo_episodes": 5590,
+  "v2_transitions": 0,
+  "goal_1e7_v2_full_columns": false,
   "goal_1e7_reached": false
  },
  "runs": {
@@ -110,24 +148,24 @@
    "shield_steps": 5186
   },
   "ppo_multi/ydp_ppo_multi_s401": {
-   "files": 13,
-   "transitions": 2611718,
-   "episodes": 1692,
-   "collisions": 16,
-   "arrivals": 1646,
+   "files": 15,
+   "transitions": 3012966,
+   "episodes": 1946,
+   "collisions": 18,
+   "arrivals": 1895,
    "stuck": 12,
-   "timeouts": 33,
-   "shield_steps": 4217
+   "timeouts": 38,
+   "shield_steps": 4916
   },
   "ppo_multi/ydp_ppo_multi_s501": {
-   "files": 8,
-   "transitions": 1555528,
-   "episodes": 923,
+   "files": 9,
+   "transitions": 1756940,
+   "episodes": 1022,
    "collisions": 10,
-   "arrivals": 852,
-   "stuck": 18,
-   "timeouts": 53,
-   "shield_steps": 2566
+   "arrivals": 936,
+   "stuck": 20,
+   "timeouts": 66,
+   "shield_steps": 3332
   },
   "ppo_single/ydp_ppo_bulk_01": {
    "files": 1,
