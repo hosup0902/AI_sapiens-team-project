@@ -167,9 +167,9 @@ class YdpCityEnv(gym.Env):
         self.ego_length = float(ego["length"])
 
         self.ego_id = "ego"
-        # 다중 AV 수집(tools/collect_multi.py): 이 접두사의 다른 AV는 교차로 장애물 인식에서 제외
-        #   (서로를 '교차로를 막는 차'로 보고 영원히 기다리는 AV-AV 교착 방지. 우선권은 SUMO가 처리)
+        # 다중 AV 수집(tools/collect_multi.py): 이 접두사의 AV끼리는 투입 순서로 우선권을 정한다 (_ignore_blocker)
         self.blocker_ignore_prefix = None
+
         self.obs_offsets = (+2, +1, 0, -1, -2)
         self.obs_dim = 1 + 5 * 4 + 5 + 5 + 13
         self.action_space = spaces.Box(-1.0, 1.0, shape=(self.act_dim,), dtype=np.float32)
@@ -179,6 +179,17 @@ class YdpCityEnv(gym.Env):
         self.snapshots = ensure_snapshots(self.snapshot_times, self.step_length)
         self.route_id = None
         self.step_count = 0
+
+    def _ignore_blocker(self, vid):
+        """다중 AV 수집에서 다른 AV를 장애물로 볼지: 먼저 투입된 AV(번호가 작음)가 우선권을 가진다.
+        나중 AV는 먼저 들어온 AV를 존중하고, 먼저 들어온 AV는 나중 AV를 무시 → 대기 순환(교착)이 생기지 않는다."""
+        p = self.blocker_ignore_prefix
+        if not p or not vid.startswith(p):
+            return False
+        try:
+            return int(vid.rsplit("_", 1)[1]) > int(self.ego_id.rsplit("_", 1)[1])
+        except (ValueError, IndexError):
+            return True
 
     # ==================================================================
     # SUMO 시작 / 에피소드 초기화
@@ -565,7 +576,7 @@ class YdpCityEnv(gym.Env):
             return out
         for f in foes:
             fid, ego_d, foe_d, _ego_exit, foe_exit = f[0], f[1], f[2], f[3], f[4]
-            if ego_d < -0.5 or (self.blocker_ignore_prefix and fid.startswith(self.blocker_ignore_prefix)):
+            if ego_d < -0.5 or self._ignore_blocker(fid):
                 continue
             try:
                 fv = T.vehicle.getSpeed(fid)
@@ -664,8 +675,7 @@ class YdpCityEnv(gym.Env):
         out = []
         r2 = (horizon + 15.0) ** 2
         for vid in T.vehicle.getIDList():
-            if vid == self.ego_id or vid == lead_id or \
-                    (self.blocker_ignore_prefix and vid.startswith(self.blocker_ignore_prefix)):
+            if vid == self.ego_id or vid == lead_id or self._ignore_blocker(vid):
                 continue
             fx, fy = T.vehicle.getPosition(vid)
             if (fx - ex) ** 2 + (fy - ey) ** 2 > r2:

@@ -10,7 +10,12 @@ SUMO 비용을 나눠 쓰므로 같은 시간에 transition이 여러 배로 늘
 환경(env/sumo_env.py)과 같은 관측·행동·보상·종료 규칙을 쓰는 독립 에피소드다(apply_action → 공용
 simulationStep → observe_step). 에피소드가 끝나면 그 자리에 새 AV를 투입하고, 시뮬레이션 시각이
 spawn_until 을 넘으면 투입을 멈춘 뒤 남은 AV가 끝나면 다른 스냅샷을 불러온다.
-AV는 HV 1,000여 대 중 N대(1 % 미만)라 교통 흐름에 주는 영향은 작다(검증: README 데이터 절).
+AV는 HV 1,000여 대 중 N대(1 % 내외)라 교통 흐름에 주는 영향은 작다.
+
+AV끼리: 교차로 장애물 인식(sumo_env._ignore_blocker)에서 먼저 투입된 AV가 우선권을 갖는다.
+  - 서로를 장애물로 보면 서로 기다리는 교착이 생기고(시험: 21 에피소드 중 교착 6),
+  - 서로 무시하면 교차로에서 AV끼리 충돌했다(시험: 충돌 다수).
+  - 투입 순서 우선권은 대기 순환이 생길 수 없어 둘 다 해결 (시험: 29 에피소드 충돌 0, 교착 2).
 
 출력: data/<name>_w<k>_p<j>.npz (50만 transition마다 한 파일, collect_pomdp_data.py NPZ와 같은 키 +
 n_av = 그 스텝에 시뮬레이션에 있던 AV 수)
@@ -59,12 +64,12 @@ def worker(args, wid):
 
     B = {k: [] for k in ("obs", "nobs", "act", "lane", "rew", "term", "trunc", "ep", "t",
                          "route", "coll", "arr", "xy", "spd", "shield", "nav")}
-    det_xy, det_off = [], [0]
+    det_xy, det_off, det_n = [], [0], 0      # det_xy: 스텝별 (k,2) float32 배열 목록
     part, total, saved_upto = 0, 0, 0
     stats = {"episodes": 0, "collisions": 0, "arrivals": 0, "stuck": 0}
 
     def flush(final=False):
-        nonlocal part, B, det_xy, det_off, saved_upto
+        nonlocal part, B, det_xy, det_off, det_n, saved_upto
         n = len(B["rew"])
         if n == 0:
             return
@@ -76,7 +81,7 @@ def worker(args, wid):
             next_observation=np.asarray(B["nobs"], np.float32),
             terminated=np.asarray(B["term"], np.bool_), truncated=np.asarray(B["trunc"], np.bool_),
             episode=np.asarray(B["ep"], np.int64), t=np.asarray(B["t"], np.int32),
-            detected_xy=np.asarray(det_xy, np.float32).reshape(-1, 2),
+            detected_xy=(np.concatenate(det_xy) if det_xy else np.zeros((0, 2), np.float32)).reshape(-1, 2),
             detected_offsets=np.asarray(det_off, np.int64),
             route_index=np.asarray(B["route"], np.int8), route_names=np.asarray(route_ids),
             collided=np.asarray(B["coll"], np.bool_), arrived=np.asarray(B["arr"], np.bool_),
@@ -86,7 +91,7 @@ def worker(args, wid):
         part += 1
         saved_upto = total
         B = {k: [] for k in B}
-        det_xy, det_off = [], [0]
+        det_xy, det_off, det_n = [], [0], 0
 
     # 에피소드 버퍼: 끝까지 간 에피소드만 B에 넣는다 (파일 경계에서 에피소드가 잘리지 않게)
     slots = [None] * args.agents          # 각 자리: dict(env, state, ...)
@@ -136,7 +141,7 @@ def worker(args, wid):
                 bf["term"].append(bool(term)); bf["trunc"].append(bool(trunc)); bf["t"].append(len(bf["rew"]) - 1)
                 bf["coll"].append(bool(inf["collided"])); bf["arr"].append(bool(inf["arrived"]))
                 bf["xy"].append(xy); bf["spd"].append(spd); bf["shield"].append(bool(inf["shield"]))
-                bf["nav"].append(nav); bf["det"].append([(d["x"], d["y"]) for d in det])
+                bf["nav"].append(nav); bf["det"].append(np.asarray([(d["x"], d["y"]) for d in det], np.float32).reshape(-1, 2))
                 if ag.ego_id in T.vehicle.getIDList():
                     ag._last_edge = T.vehicle.getRoadID(ag.ego_id)
                     s["xy"] = T.vehicle.getPosition(ag.ego_id)
@@ -173,8 +178,9 @@ def worker(args, wid):
                     B["ep"].extend([s["ep"]] * n)
                     B["route"].extend([route_ids.index(ag.route_id)] * n)
                     for pts in bf["det"]:
-                        det_xy.extend(pts)
-                        det_off.append(len(det_xy))
+                        det_xy.append(pts)
+                        det_n += len(pts)
+                        det_off.append(det_n)
                     total += n
                     stats["episodes"] += 1
                     stats["collisions"] += int(inf["collided"])
@@ -236,7 +242,7 @@ def main():
     ap.add_argument("--seed", type=int, default=100)
     ap.add_argument("--spawn-until", type=float, default=3300)
     ap.add_argument("--max-snapshot-index", type=int, default=6, help="0~6 → 900~2700 s 스냅샷 (투입 시간 확보)")
-    ap.add_argument("--part-size", type=int, default=500_000)
+    ap.add_argument("--part-size", type=int, default=200_000)
     ap.add_argument("--out-dir", default=os.path.join(BASE, "data", "multi"))
     ap.add_argument("--name", default="ydp_ppo_multi")
     ap.add_argument("--debug", action="store_true")
