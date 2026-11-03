@@ -344,7 +344,7 @@ async function icon(Comp, color, size = 256) {
   // 15. 실패 분석 ─────────────────────────────
   const LS = DT.longest_stop_s, LX = DT.expert_longest_stop_s;
   const stopTxt = () => LS ? `에피소드별 최장 정지 중앙값 PPO ${Math.round(LS.p50)} s · 전문가 ${Math.round(LX.p50)} s (신호 주기 수준)` +
-    (DT.stopped_at_red_pct_of_stops ? ` · 정지의 ${Math.round(DT.stopped_at_red_pct_of_stops)} %가 적·황신호 앞` : "") : "–";
+    (DT.stopped_at_red_pct_of_stops ? ` · 정지의 ${Math.round(DT.stopped_at_red_pct_of_stops)} %가 적·황신호 대기열(150 m 이내)` : "") : "–";
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "정리" });
   s.addText("남은 실패는 어디서, 왜 일어나는가", { placeholder: "title" });
   s.addImage({ path: IMG("stop_map.jpg"), x: 0.6, y: 1.4, w: 6.9, h: 4.89, altText: "AV 정지 위치와 원인 지도" });
@@ -357,7 +357,7 @@ async function icon(Comp, color, size = 256) {
     tx(s, h, { x: 8.05, y: y + 0.08, w: 4.4, h: 0.38, fontSize: 15, bold: true, color: C.text1 });
     tx(s, b, { x: 8.05, y: y + 0.46, w: 4.45, h: 0.66, fontSize: 11.5, color: C.text2, valign: "top" });
   });
-  NOTES.push(`[약 55초] 남은 실패도 분석했습니다. 왼쪽은 AV가 멈춘 위치와 원인을 지도에 찍은 것입니다. 충돌은 모두 교차로 안에서 났고, 직선 구간 추돌이나 차선변경 측면 충돌은 한 건도 없었습니다. 충돌의 과반은 일반 차량이 AV를 들이받은 경우로, 일반 차량끼리도 생기는 SUMO 교차로 모델의 현상입니다. 교착은 대기열 맨 앞 차를 추적해 보니 영등포 로터리와 서울교 북단 신호의 실제 정체였습니다. 평가 기준의 비정상 정지도 데이터로 확인했습니다. 에피소드마다 가장 길게 멈춘 시간의 중앙값이 PPO ${LS ? Math.round(LS.p50) : "–"}초로 규칙 전문가의 ${LX ? Math.round(LX.p50) : "–"}초와 비슷한 신호 한 주기 수준${DT.stopped_at_red_pct_of_stops ? `이고, 멈춘 시간의 ${Math.round(DT.stopped_at_red_pct_of_stops)} %는 적신호나 황신호 앞이었습니다` : "입니다"}.`);
+  NOTES.push(`[약 55초] 남은 실패도 분석했습니다. 왼쪽은 AV가 멈춘 위치와 원인을 지도에 찍은 것입니다. 충돌은 모두 교차로 안에서 났고, 직선 구간 추돌이나 차선변경 측면 충돌은 한 건도 없었습니다. 충돌의 과반은 일반 차량이 AV를 들이받은 경우로, 일반 차량끼리도 생기는 SUMO 교차로 모델의 현상입니다. 교착은 대기열 맨 앞 차를 추적해 보니 영등포 로터리와 서울교 북단 신호의 실제 정체였습니다. 평가 기준의 비정상 정지도 데이터로 확인했습니다. 에피소드마다 가장 길게 멈춘 시간의 중앙값이 PPO ${LS ? Math.round(LS.p50) : "–"}초로 규칙 전문가의 ${LX ? Math.round(LX.p50) : "–"}초와 비슷한 신호 한 주기 수준${DT.stopped_at_red_pct_of_stops ? `이고, 멈춘 시간의 ${Math.round(DT.stopped_at_red_pct_of_stops)} %는 적신호나 황신호 앞 150 m 안의 대기열이었습니다` : "입니다"}.`);
 
   // 16. 결론 ─────────────────────────────────
   s = pres.addSlide({ masterName: "SECTION_DARK", sectionTitle: "정리" });

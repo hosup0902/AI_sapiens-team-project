@@ -33,7 +33,7 @@ def main():
         route_steps = collections.Counter()
         nav_hist = collections.Counter()
         longest = []                    # 에피소드별 최장 연속 정지(s)
-        stop_red, stop_other = 0, 0     # 정지 step: 적·황색 신호 앞 60 m 이내 / 그 외 (State 있는 파일만)
+        stop_red, stop_other = 0, 0     # 정지 step: 적·황색 신호 앞 150 m 이내(대기열) / 그 외 (State 있는 파일만)
         for p in paths:
             if not os.path.exists(p):
                 continue
@@ -61,7 +61,7 @@ def main():
                     rl = np.flatnonzero(dx == -1) - np.flatnonzero(dx == 1)
                     longest.append(0.5 * (rl.max() if len(rl) else 0))
                 if "state_tls_state" in d.files:
-                    red = (d["state_tls_state"] <= 0) & (d["state_tls_state"] > -2) & (d["state_tls_dist"] < 60)
+                    red = (d["state_tls_state"] <= 0) & (d["state_tls_state"] > -2) & (d["state_tls_dist"] < 150)
                     stop_red += int((stopped & red).sum())
                     stop_other += int((stopped & ~red).sum())
             r = run_name(p)
